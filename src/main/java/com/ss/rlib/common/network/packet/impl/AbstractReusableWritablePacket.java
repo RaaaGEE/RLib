@@ -1,17 +1,19 @@
 package com.ss.rlib.common.network.packet.impl;
 
 import static com.ss.rlib.common.util.ObjectUtils.notNull;
+
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.ss.rlib.common.concurrent.atomic.AtomicInteger;
 import com.ss.rlib.common.network.packet.ReusableWritablePacket;
 import com.ss.rlib.common.util.ClassUtils;
 import com.ss.rlib.common.util.pools.Pool;
 import com.ss.rlib.common.util.pools.PoolFactory;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * The reusable implementation of {@link AbstractWritablePacket} using the counter to control the life cycle of
@@ -127,7 +129,8 @@ public abstract class AbstractReusableWritablePacket extends AbstractWritablePac
      * @return thread local pool.
      */
     protected @NotNull Pool<ReusableWritablePacket> getThreadLocalPool() {
-        return LOCAL_POOLS.get().computeIfAbsent((Class<ReusableWritablePacket>) getClass(),
+        Class<ReusableWritablePacket> packetClass = ClassUtils.unsafeNNCast(getClass());
+        return LOCAL_POOLS.get().computeIfAbsent(packetClass,
                 PoolFactory::newConcurrentStampedLockReusablePool);
     }
 
