@@ -1,11 +1,12 @@
 package com.ss.rlib.common.geom;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.ss.rlib.common.geom.util.AngleUtils;
 import com.ss.rlib.common.util.ExtMath;
 import com.ss.rlib.common.util.random.Random;
 import com.ss.rlib.common.util.random.RandomFactory;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * The implementation of rotation in 3D world based on Quaternion.
@@ -13,12 +14,13 @@ import org.jetbrains.annotations.Nullable;
  * @author JavaSaBr
  */
 public class Quaternion4f {
-
+    public static final Quaternion4f IDENTITY = new Quaternion4f(0, 0, 0, 1);
+    
     private static final ThreadLocal<Random> RANDOM_LOCAL = ThreadLocal.withInitial(RandomFactory::newFastRandom);
     private static final ThreadLocal<Quaternion4f> ROTATION_LOCAL = ThreadLocal.withInitial(Quaternion4f::newInstance);
 
     /**
-     * Get quaternion 4 f.
+     * Get the thread local instance.
      *
      * @return the thread local instance.
      */
@@ -26,60 +28,51 @@ public class Quaternion4f {
         return ROTATION_LOCAL.get();
     }
 
-    /**
-     * New instance quaternion 4 f.
-     *
-     * @return the quaternion 4 f
-     */
+    @Deprecated
     public static Quaternion4f newInstance() {
         return new Quaternion4f();
     }
 
-    /**
-     * New instance quaternion 4 f.
-     *
-     * @param angleX the angle x
-     * @param angleY the angle y
-     * @param angleZ the angle z
-     * @return the quaternion 4 f
-     */
+    @Deprecated
     public static Quaternion4f newInstance(final float angleX, final float angleY, final float angleZ) {
         return newInstance().fromAngles(angleX, angleY, angleZ);
     }
 
-    /**
-     * New instance quaternion 4 f.
-     *
-     * @param x the x
-     * @param y the y
-     * @param z the z
-     * @param w the w
-     * @return the quaternion 4 f
-     */
+    @Deprecated
     public static Quaternion4f newInstance(final float x, final float y, final float z, final float w) {
         return new Quaternion4f(x, y, z, w);
     }
 
-    /**
-     * New instance quaternion 4 f.
-     *
-     * @param vals the vals
-     * @return the quaternion 4 f
-     */
+    @Deprecated
     public static Quaternion4f newInstance(final float[] vals) {
         return new Quaternion4f(vals[0], vals[1], vals[2], vals[3]);
     }
 
+    /**
+     * The X component.
+     */
     private float x;
+    
+    /**
+     * The Y component.
+     */
     private float y;
+    
+    /**
+     * The Z component.
+     */
     private float z;
+    
+    /**
+     * The W component.
+     */
     private float w;
 
-    private Quaternion4f() {
+    public Quaternion4f() {
         w = 1;
     }
 
-    private Quaternion4f(final float x, final float y, final float z, final float w) {
+    public Quaternion4f(float x, float y, float z, float w) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -92,8 +85,7 @@ public class Quaternion4f {
      * @param rotation the rotation
      * @return the quaternion 4 f
      */
-    @NotNull
-    public Quaternion4f addLocal(@NotNull final Quaternion4f rotation) {
+    public @NotNull Quaternion4f addLocal(@NotNull Quaternion4f rotation) {
         this.x += rotation.x;
         this.y += rotation.y;
         this.z += rotation.z;
@@ -107,12 +99,12 @@ public class Quaternion4f {
      * @param rotation сверяемый разворот.
      * @return косинус угла между 2мя разворотами.
      */
-    public float dot(@NotNull final Quaternion4f rotation) {
+    public float dot(@NotNull Quaternion4f rotation) {
         return w * rotation.w + x * rotation.x + y * rotation.y + z * rotation.z;
     }
 
     @Override
-    public final boolean equals(final Object obj) {
+    public final boolean equals(Object obj) {
 
         if (this == obj) {
             return true;
@@ -145,28 +137,27 @@ public class Quaternion4f {
      * @param zAngle угол по оси Z.
      * @return the quaternion 4 f
      */
-    @NotNull
-    public final Quaternion4f fromAngles(final float angleX, final float yAngle, final float zAngle) {
+    public final @NotNull Quaternion4f fromAngles(float angleX, float yAngle, float zAngle) {
 
         float angle = zAngle * 0.5f;
 
-        final float sinZ = ExtMath.sin(angle);
-        final float cosZ = ExtMath.cos(angle);
+        float sinZ = ExtMath.sin(angle);
+        float cosZ = ExtMath.cos(angle);
 
         angle = yAngle * 0.5f;
 
-        final float sinY = ExtMath.sin(angle);
-        final float cosY = ExtMath.cos(angle);
+        float sinY = ExtMath.sin(angle);
+        float cosY = ExtMath.cos(angle);
 
         angle = angleX * 0.5f;
 
-        final float sinX = ExtMath.sin(angle);
-        final float cosX = ExtMath.cos(angle);
+        float sinX = ExtMath.sin(angle);
+        float cosX = ExtMath.cos(angle);
 
-        final float cosYXcosZ = cosY * cosZ;
-        final float sinYXsinZ = sinY * sinZ;
-        final float cosYXsinZ = cosY * sinZ;
-        final float sinYXcosZ = sinY * cosZ;
+        float cosYXcosZ = cosY * cosZ;
+        float sinYXsinZ = sinY * sinZ;
+        float cosYXsinZ = cosY * sinZ;
+        float sinYXcosZ = sinY * cosZ;
 
         w = cosYXcosZ * cosX - sinYXsinZ * sinX;
         x = cosYXcosZ * sinX + sinYXsinZ * cosX;
@@ -184,7 +175,7 @@ public class Quaternion4f {
      * @return the quaternion 4 f
      */
     @NotNull
-    public final Quaternion4f fromAngles(final float[] angles) {
+    public final Quaternion4f fromAngles(float[] angles) {
         return fromAngles(angles[0], angles[1], angles[2]);
     }
 
@@ -199,7 +190,7 @@ public class Quaternion4f {
      * @return the quaternion 4 f
      */
     @NotNull
-    public Quaternion4f fromAxes(@NotNull final Vector3f axisX, @NotNull final Vector3f axisY, @NotNull final Vector3f axisZ) {
+    public Quaternion4f fromAxes(@NotNull Vector3f axisX, @NotNull Vector3f axisY, @NotNull Vector3f axisZ) {
         return fromRotationMatrix(axisX.getX(), axisY.getX(), axisZ.getX(), axisX.getY(), axisY.getY(),
                 axisZ.getY(), axisX.getZ(), axisY.getZ(), axisZ.getZ());
     }
@@ -219,9 +210,9 @@ public class Quaternion4f {
      * @return the quaternion 4 f
      */
     @NotNull
-    public Quaternion4f fromRotationMatrix(final float val_0_0, final float val_0_1, final float val_0_2,
-                                           final float val_1_0, final float val_1_1, final float val_1_2,
-                                           final float val_2_0, final float val_2_1, final float val_2_2) {
+    public Quaternion4f fromRotationMatrix(float val_0_0, float val_0_1, float val_0_2,
+                                           float val_1_0, float val_1_1, float val_1_2,
+                                           float val_2_0, float val_2_1, float val_2_2) {
 
         final float t = val_0_0 + val_1_1 + val_2_2;
 
@@ -371,7 +362,7 @@ public class Quaternion4f {
      *
      * @param w степень разворота по оси w.
      */
-    public final void setW(final float w) {
+    public final void setW(float w) {
         this.w = w;
     }
 
@@ -389,7 +380,7 @@ public class Quaternion4f {
      *
      * @param x степень разворота по оси х.
      */
-    public final void setX(final float x) {
+    public final void setX(float x) {
         this.x = x;
     }
 
@@ -407,7 +398,7 @@ public class Quaternion4f {
      *
      * @param y степень разворота по оси y.
      */
-    public final void setY(final float y) {
+    public final void setY(float y) {
         this.y = y;
     }
 
@@ -425,7 +416,7 @@ public class Quaternion4f {
      *
      * @param z степень разворота по оси z.
      */
-    public final void setZ(final float z) {
+    public final void setZ(float z) {
         this.z = z;
     }
 
@@ -450,7 +441,7 @@ public class Quaternion4f {
      * @param up        вектор для ориаентации где верх а где низ.
      * @param buffer    буффер векторов для рассчета.
      */
-    public void lookAt(@NotNull final Vector3f direction, @NotNull final Vector3f up, @NotNull final Vector3fBuffer buffer) {
+    public void lookAt(@NotNull Vector3f direction, @NotNull Vector3f up, @NotNull Vector3fBuffer buffer) {
 
         final Vector3f first = buffer.nextVector();
         first.set(direction).normalizeLocal();
@@ -472,7 +463,7 @@ public class Quaternion4f {
      * @return полученный вектор.
      */
     @NotNull
-    public final Vector3f multLocal(@NotNull final Vector3f vector) {
+    public final Vector3f multLocal(@NotNull Vector3f vector) {
 
         final float vectorX = vector.getX();
         final float vectorY = vector.getY();
@@ -542,7 +533,7 @@ public class Quaternion4f {
      *
      * @param random the random
      */
-    public void random(@NotNull final Random random) {
+    public void random(@NotNull Random random) {
 
         final float x = AngleUtils.degreeToRadians(random.nextInt(0, 360));
         final float y = AngleUtils.degreeToRadians(random.nextInt(0, 360));
@@ -558,7 +549,7 @@ public class Quaternion4f {
      * @return the quaternion 4 f
      */
     @NotNull
-    public Quaternion4f set(@NotNull final Quaternion4f rotation) {
+    public Quaternion4f set(@NotNull Quaternion4f rotation) {
         this.x = rotation.x;
         this.y = rotation.y;
         this.z = rotation.z;
@@ -574,7 +565,7 @@ public class Quaternion4f {
      * @param z the z
      * @param w the w
      */
-    public void setXYZW(final float x, final float y, final float z, final float w) {
+    public void setXYZW(float x, float y, float z, float w) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -587,7 +578,7 @@ public class Quaternion4f {
      * @param end     конечный разворот.
      * @param percent % разворота от текущего к конечному.
      */
-    public void slerp(@NotNull final Quaternion4f end, final float percent) {
+    public void slerp(@NotNull Quaternion4f end, float percent) {
         if (equals(end)) return;
 
         float result = x * end.x + y * end.y + z * end.z + w * end.w;
@@ -628,7 +619,7 @@ public class Quaternion4f {
      * @return the quaternion 4 f
      */
     @NotNull
-    public Quaternion4f slerp(@NotNull final Quaternion4f start, @NotNull final Quaternion4f end, final float percent) {
+    public Quaternion4f slerp(@NotNull Quaternion4f start, @NotNull Quaternion4f end, float percent) {
         return slerp(start, end, percent, false);
     }
 
@@ -643,8 +634,8 @@ public class Quaternion4f {
      * @return the quaternion 4 f
      */
     @NotNull
-    public final Quaternion4f slerp(@NotNull final Quaternion4f start, @NotNull final Quaternion4f end,
-                                    final float percent, final boolean forceLinear) {
+    public final Quaternion4f slerp(@NotNull Quaternion4f start, @NotNull Quaternion4f end,
+                                    float percent, boolean forceLinear) {
 
         if (start.equals(end)) {
             set(start);
@@ -685,7 +676,7 @@ public class Quaternion4f {
      * @param targetRotation конечный разворот.
      * @param percent        % разворота от стартового до конечного.
      */
-    public void nlerp(@NotNull final Quaternion4f targetRotation, float percent) {
+    public void nlerp(@NotNull Quaternion4f targetRotation, float percent) {
 
         float dot = dot(targetRotation);
         float blendI = 1.0F - percent;
@@ -711,7 +702,7 @@ public class Quaternion4f {
      * @param rotation the rotation
      * @return the quaternion 4 f
      */
-    public Quaternion4f subtractLocal(@NotNull final Quaternion4f rotation) {
+    public Quaternion4f subtractLocal(@NotNull Quaternion4f rotation) {
         this.x -= rotation.x;
         this.y -= rotation.y;
         this.z -= rotation.z;
@@ -725,7 +716,7 @@ public class Quaternion4f {
      * @param axisStore the axis store
      * @return the float
      */
-    public final float toAngleAxis(@Nullable final Vector3f axisStore) {
+    public final float toAngleAxis(@Nullable Vector3f axisStore) {
 
         final float sqrLength = x * x + y * y + z * z;
         float angle;
@@ -809,7 +800,7 @@ public class Quaternion4f {
      * @return результат в виде матрицы.
      */
     @NotNull
-    public final Matrix3f toRotationMatrix(@NotNull final Matrix3f result) {
+    public final Matrix3f toRotationMatrix(@NotNull Matrix3f result) {
 
         final float norm = norm();
 

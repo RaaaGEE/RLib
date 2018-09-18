@@ -4,10 +4,10 @@ import static java.lang.Float.floatToIntBits;
 import static java.lang.Float.isInfinite;
 import static java.lang.Float.isNaN;
 
-import com.ss.rlib.common.util.ExtMath;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import com.ss.rlib.common.util.ExtMath;
 
 /**
  * Implementation of float vector in 2D space (two coordinates)
@@ -410,6 +410,22 @@ public class Vector2f {
      */
     public Vector2f divideLocal(float scalar) {
         return divideLocal(scalar, scalar);
+    }
+    
+    /**
+     * Linear time-based interpolation stored to this vector.
+     * 
+     * @param min the minimal vector
+     * @param max the maximal vector
+     * @param t the time
+     * @return this vector
+     */
+    public Vector2f lerp(Vector2f min, Vector2f max, float t) {
+        t = ExtMath.clamp(t);
+        float x = min.getX() + (max.getX() - min.getX()) * t;
+        float y = min.getY() + (max.getY() - min.getY()) * t;
+        set(x, y);
+        return this;
     }
 
     @Override
