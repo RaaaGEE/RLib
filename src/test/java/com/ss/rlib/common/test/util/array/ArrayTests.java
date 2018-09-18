@@ -1,14 +1,19 @@
 package com.ss.rlib.common.test.util.array;
 
-import com.ss.rlib.common.util.ArrayUtils;
-import com.ss.rlib.common.util.array.*;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.IntStream;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.ss.rlib.common.util.ArrayUtils;
+import com.ss.rlib.common.util.array.Array;
+import com.ss.rlib.common.util.array.ArrayCollectors;
+import com.ss.rlib.common.util.array.ArrayFactory;
+import com.ss.rlib.common.util.array.ConcurrentArray;
+import com.ss.rlib.common.util.array.UnsafeArray;
 
 /**
  * The list of tests {@link Array}.
@@ -109,7 +114,7 @@ public class ArrayTests {
 
         Assertions.assertEquals(1000, concurrentArray.size());
 
-        Array<Number> numbers = IntStream.range(0, 1000)
+        Array<Integer> numbers = IntStream.range(0, 1000)
                 .mapToObj(value -> value)
                 .collect(ArrayCollectors.toArray(Integer.class));
 
