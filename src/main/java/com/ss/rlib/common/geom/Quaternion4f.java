@@ -304,13 +304,13 @@ public class Quaternion4f {
         float zw = z * w * norm;
 
         switch (type) {
-            case LEFT: {
+            case RIGHT: {
                 store.setX(1 - 2 * (yy + zz));
                 store.setY(2 * (xy + zw));
                 store.setZ(2 * (xz - yw));
                 break;
             }
-            case RIGHT: {
+            case LEFT: {
                 store.setX(1 - 2 * (yy + zz));
                 store.setY(2 * (xy + zw));
                 store.setZ(2 * (xz - yw));
@@ -340,7 +340,7 @@ public class Quaternion4f {
                 store.setX(2 * (xz + yw));
                 store.setY(2 * (yz - xw));
                 store.setZ(1 - 2 * (xx + yy));
-                store.negate();
+                store.negateLocal();
                 break;
             }
         }
