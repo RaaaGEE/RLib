@@ -505,6 +505,15 @@ public final class Vector3f {
         return ExtMath.sqrt(x * x + y * y + z * z);
     }
     
+    /** 
+     * Return vector sqr length.
+     * 
+     * @return length
+     */
+    public float sqrLength() {
+        return x * x + y * y + z * z;
+    }
+    
     /**
      * Divide local vector 3 f.
      *
