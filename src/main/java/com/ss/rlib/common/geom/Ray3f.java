@@ -1,8 +1,8 @@
 package com.ss.rlib.common.geom;
 
-import com.ss.rlib.common.util.pools.Reusable;
-import com.ss.rlib.common.util.pools.Reusable;
 import org.jetbrains.annotations.NotNull;
+
+import com.ss.rlib.common.util.pools.Reusable;
 
 /**
  * The implementation of a ray.
