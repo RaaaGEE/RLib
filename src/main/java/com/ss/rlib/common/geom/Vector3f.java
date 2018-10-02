@@ -613,10 +613,13 @@ public final class Vector3f {
         return this;
     }
     
-    /** Check vectors to equals with epsilon.
+    /** 
+     * Check vectors to equals with epsilon.
+     * 
      * @param vector vector
      * @param epsilon epsilon
-     * @return true if vectors equals */
+     * @return true if vectors equals 
+     */
     public boolean equals(@NotNull Vector3f vector, float epsilon) {
         return Math.abs(x - vector.getX()) < epsilon && Math.abs(y - vector.getY()) < epsilon && Math.abs(z - vector.getZ()) < epsilon;
     }
