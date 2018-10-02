@@ -366,7 +366,7 @@ public class Vector2f {
      * @param vector the vector
      * @return this vector
      */
-    public Vector2f subtractLocal(Vector2f vector) {
+    public @NotNull Vector2f subtractLocal(@NotNull Vector2f vector) {
         return subtractLocal(vector.x, vector.y);
     }
     
@@ -429,7 +429,7 @@ public class Vector2f {
      * @param t the time
      * @return this vector
      */
-    public Vector2f lerp(Vector2f min, Vector2f max, float t) {
+    public @NotNull Vector2f lerp(@NotNull Vector2f min, @NotNull Vector2f max, float t) {
         t = ExtMath.clamp(t);
         float x = min.getX() + (max.getX() - min.getX()) * t;
         float y = min.getY() + (max.getY() - min.getY()) * t;
@@ -441,7 +441,7 @@ public class Vector2f {
      * @param vector vector
      * @param epsilon epsilon
      * @return true if vectors equals */
-    public boolean equals(Vector2f vector, float epsilon) {
+    public boolean equals(@NotNull Vector2f vector, float epsilon) {
         return Math.abs(x - vector.getX()) < epsilon && Math.abs(y - vector.getY()) < epsilon;
     }
 

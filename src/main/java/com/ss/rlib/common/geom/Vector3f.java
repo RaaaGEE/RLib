@@ -604,7 +604,7 @@ public final class Vector3f {
      * @param t the time
      * @return this vector
      */
-    public Vector3f lerp(Vector3f min, Vector3f max, float t) {
+    public @NotNull Vector3f lerp(@NotNull Vector3f min, @NotNull Vector3f max, float t) {
         t = ExtMath.clamp(t);
         float x = min.getX() + (max.getX() - min.getX()) * t;
         float y = min.getY() + (max.getY() - min.getY()) * t;
@@ -617,7 +617,7 @@ public final class Vector3f {
      * @param vector vector
      * @param epsilon epsilon
      * @return true if vectors equals */
-    public boolean equals(Vector3f vector, float epsilon) {
+    public boolean equals(@NotNull Vector3f vector, float epsilon) {
         return Math.abs(x - vector.getX()) < epsilon && Math.abs(y - vector.getY()) < epsilon && Math.abs(z - vector.getZ()) < epsilon;
     }
 
