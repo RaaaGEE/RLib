@@ -44,21 +44,25 @@ public class BoundingSphere extends AbstractBounding {
         return GeometryUtils.getSquareDistance(startX, centerY, centerZ, x, y, z) < squareRadius;
     }
 
+    /** {@inheritDoc} */
     @Override
     public float getResultCenterZ() {
         return center.getZ() + offset.getZ();
     }
 
+    /** {@inheritDoc} */
     @Override
     public float getResultCenterY() {
         return center.getY() + offset.getY();
     }
 
+    /** {@inheritDoc} */
     @Override
     public float getResultCenterX() {
         return center.getX() + offset.getX();
     }
 
+    /** {@inheritDoc} */
     @Override
     public @NotNull BoundingType getBoundingType() {
         return BoundingType.SPHERE;
@@ -73,11 +77,11 @@ public class BoundingSphere extends AbstractBounding {
         return radius;
     }
 
+    /** {@inheritDoc} */
     @Override
     public @NotNull Vector3f getResultCenter(@NotNull Vector3fBuffer buffer) {
 
-        Vector3f vector = buffer.nextVector()
-                .set(center);
+        var vector = buffer.take(center);
 
         if (offset.isZero()) {
             return vector;
@@ -86,6 +90,7 @@ public class BoundingSphere extends AbstractBounding {
         return vector.addLocal(offset);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean intersects(@NotNull Bounding bounding, @NotNull Vector3fBuffer buffer) {
         switch (bounding.getBoundingType()) {
@@ -119,21 +124,23 @@ public class BoundingSphere extends AbstractBounding {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean intersects(@NotNull Vector3f start, @NotNull Vector3f direction, @NotNull Vector3fBuffer buffer) {
 
-        Vector3f diff = buffer.nextVector()
-                .set(start)
+        var diff = buffer.take(start)
                 .subtractLocal(getResultCenter(buffer));
 
         float a = start.dot(diff) - squareRadius;
 
         if (a <= 0.0) {
+            buffer.put(diff);
             return true;
         }
 
         float b = direction.dot(diff);
 
+        buffer.put(diff);
         return b < 0.0 && b * b >= a;
 
     }

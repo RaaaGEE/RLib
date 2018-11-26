@@ -76,6 +76,7 @@ public class AxisAlignedBoundingBox extends AbstractBounding {
         this.offsetZ = offset.getZ();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean contains(float x, float y, float z) {
         return Math.abs(getResultCenterX() - x) < sizeX &&
@@ -83,17 +84,17 @@ public class AxisAlignedBoundingBox extends AbstractBounding {
                Math.abs(getResultCenterZ() - z) < sizeZ;
     }
 
+    /** {@inheritDoc} */
     @Override
     public @NotNull BoundingType getBoundingType() {
         return BoundingType.AXIS_ALIGNED_BOX;
     }
 
+    /** {@inheritDoc} */
     @Override
     public @NotNull Vector3f getResultCenter(@NotNull Vector3fBuffer buffer) {
 
-        Vector3f vector = buffer.nextVector()
-                .set(center);
-
+        var vector = buffer.take(center);
         if (offset.isZero()) {
             return vector;
         }
@@ -101,16 +102,19 @@ public class AxisAlignedBoundingBox extends AbstractBounding {
         return vector.addLocal(offsetX, offsetY, offsetZ);
     }
 
+    /** {@inheritDoc} */
     @Override
     public float getResultCenterZ() {
         return center.getZ() + offsetZ;
     }
 
+    /** {@inheritDoc} */
     @Override
     public float getResultCenterY() {
         return center.getY() + offsetY;
     }
 
+    /** {@inheritDoc} */
     @Override
     public float getResultCenterX() {
         return center.getX() + offsetX;
@@ -156,13 +160,13 @@ public class AxisAlignedBoundingBox extends AbstractBounding {
      * Get AABB's size.
      *
      * @param buffer the vector buffer.
-     * @return AABB's size.
+     * @return AABB's size from vector buffer.
      */
     public Vector3f getSize(@NotNull Vector3fBuffer buffer) {
-        return buffer.nextVector()
-                .set(size);
+        return buffer.take(size);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean intersects(@NotNull Bounding bounding, @NotNull Vector3fBuffer buffer) {
         switch (bounding.getBoundingType()) {
@@ -219,6 +223,7 @@ public class AxisAlignedBoundingBox extends AbstractBounding {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean intersects(
             @NotNull Vector3f start,
@@ -257,19 +262,21 @@ public class AxisAlignedBoundingBox extends AbstractBounding {
         return tmin <= tmax && tmax > 0.f;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void update(@NotNull Quaternion4f rotation, @NotNull Vector3fBuffer buffer) {
 
         matrix.set(rotation);
         matrix.absoluteLocal();
 
-        Vector3f vector = matrix.mult(size, buffer.nextVector());
+        var vector = matrix.mult(size, buffer.take());
 
         sizeX = Math.abs(vector.getX());
         sizeY = Math.abs(vector.getY());
         sizeZ = Math.abs(vector.getZ());
 
         if (offset.isZero()) {
+            buffer.put(vector);
             return;
         }
 
@@ -278,6 +285,8 @@ public class AxisAlignedBoundingBox extends AbstractBounding {
         offsetX = vector.getX();
         offsetY = vector.getY();
         offsetZ = vector.getZ();
+        
+        buffer.put(vector);
     }
 
     @Override
