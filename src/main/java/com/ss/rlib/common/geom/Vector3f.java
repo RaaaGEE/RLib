@@ -87,31 +87,6 @@ public final class Vector3f {
     }
 
     /**
-     * Add the values to the current vector.
-     *
-     * @param addX x axis value.
-     * @param addY y axis value.
-     * @param addZ z axis value.
-     * @return this vector.
-     */
-    public @NotNull Vector3f addLocal(final float addX, final float addY, final float addZ) {
-        x += addX;
-        y += addY;
-        z += addZ;
-        return this;
-    }
-
-    /**
-     * Add the vector to this vector.
-     *
-     * @param vector the vector.
-     * @return this vector.
-     */
-    public @NotNull Vector3f addLocal(@NotNull Vector3f vector) {
-        return addLocal(vector.x, vector.y, vector.z);
-    }
-
-    /**
      * Calculate a cross vector between the current vector and the coords.
      *
      * @param otherX the other x
@@ -468,6 +443,20 @@ public final class Vector3f {
         this.z = z;
         return this;
     }
+    
+    /**
+     * Add this vector by the vector and store it to the result vector.
+     *
+     * @param vector the vector.
+     * @param result the result.
+     * @return the result vector.
+     */
+    public @NotNull Vector3f add(@NotNull Vector3f vector, @NotNull Vector3f result) {
+        result.x = x + vector.x;
+        result.y = y + vector.y;
+        result.z = z + vector.z;
+        return result;
+    }
 
     /**
      * Subtract this vector by the vector and store it to the result vector.
@@ -481,6 +470,21 @@ public final class Vector3f {
         result.y = y - vector.y;
         result.z = z - vector.z;
         return result;
+    }
+    
+    /**
+     * Add the values to the current vector.
+     *
+     * @param addX x axis value.
+     * @param addY y axis value.
+     * @param addZ z axis value.
+     * @return this vector.
+     */
+    public @NotNull Vector3f addLocal(float addX, float addY, float addZ) {
+        x += addX;
+        y += addY;
+        z += addZ;
+        return this;
     }
 
     /**
@@ -496,6 +500,17 @@ public final class Vector3f {
         y -= subY;
         z -= subZ;
         return this;
+    }
+    
+
+    /**
+     * Add the vector to this vector.
+     *
+     * @param vector the vector.
+     * @return this vector.
+     */
+    public @NotNull Vector3f addLocal(@NotNull Vector3f vector) {
+        return addLocal(vector.x, vector.y, vector.z);
     }
 
     /**
@@ -534,7 +549,7 @@ public final class Vector3f {
      * @param z the divider z
      * @return the vector 3 f
      */
-    public @NotNull Vector3f divideLocal(final float x, final float y, final float z) {
+    public @NotNull Vector3f divideLocal(float x, float y, float z) {
         this.x /= x;
         this.y /= y;
         this.z /= z;
@@ -547,7 +562,7 @@ public final class Vector3f {
      * @param vector the divider vector
      * @return the vector 3 f
      */
-    public @NotNull Vector3f divideLocal(@NotNull final Vector3f vector) {
+    public @NotNull Vector3f divideLocal(@NotNull Vector3f vector) {
         return divideLocal(vector.x, vector.y, vector.z);
     }
     
@@ -557,7 +572,7 @@ public final class Vector3f {
      * @param scalar the divider scalar
      * @return the vector 3 f
      */
-    public @NotNull Vector3f divideLocal(final float scalar) {
+    public @NotNull Vector3f divideLocal(float scalar) {
         return divideLocal(scalar, scalar, scalar);
     }
 
