@@ -1,12 +1,14 @@
 package com.ss.rlib.common.util;
 
 import static com.ss.rlib.common.util.ObjectUtils.notNull;
+import com.ss.rlib.common.util.array.Array;
+import com.ss.rlib.common.util.array.ArrayComparator;
+import com.ss.rlib.common.util.array.ArrayFactory;
+import com.ss.rlib.common.util.array.UnsafeArray;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.CharBuffer;
@@ -17,18 +19,13 @@ import java.nio.file.attribute.FileTime;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Objects;
-import java.util.regex.Matcher;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import com.ss.rlib.common.util.array.Array;
-import com.ss.rlib.common.util.array.ArrayComparator;
-import com.ss.rlib.common.util.array.ArrayFactory;
-import com.ss.rlib.common.util.array.UnsafeArray;
 
 /**
  * The utility class.
@@ -93,10 +90,14 @@ public class FileUtils {
      * @param filename the file name.
      * @return true if the file name is valid.
      */
-    public static boolean isValidName(@Nullable final String filename) {
-        if (StringUtils.isEmpty(filename)) return false;
-        final Matcher matcher = FILE_NAME_PATTERN.matcher(filename);
-        return matcher.matches();
+    public static boolean isValidName(@Nullable String filename) {
+
+        if (StringUtils.isEmpty(filename)) {
+            return false;
+        }
+
+        return FILE_NAME_PATTERN.matcher(filename)
+                .matches();
     }
 
     /**
@@ -106,9 +107,13 @@ public class FileUtils {
      * @return normalized file name.
      */
     public static @NotNull String normalizeName(@Nullable final String filename) {
-        if (StringUtils.isEmpty(filename)) return "_";
-        final Matcher matcher = NORMALIZE_FILE_NAME_PATTERN.matcher(filename);
-        return matcher.replaceAll("_");
+
+        if (StringUtils.isEmpty(filename)) {
+            return "_";
+        }
+
+        return NORMALIZE_FILE_NAME_PATTERN.matcher(filename)
+                .replaceAll("_");
     }
 
     /**
@@ -119,8 +124,12 @@ public class FileUtils {
      * @param withFolders need to add folders.
      * @param extensions  extensions filter.
      */
-    public static void addFilesTo(@NotNull final Array<Path> container, @NotNull final Path dir, final boolean withFolders,
-                                  @Nullable final String... extensions) {
+    public static void addFilesTo(
+            @NotNull Array<Path> container,
+            @NotNull Path dir,
+            boolean withFolders,
+            @Nullable String... extensions
+    ) {
 
         if (Files.isDirectory(dir) && withFolders) {
             container.add(dir);
@@ -131,8 +140,8 @@ public class FileUtils {
             return;
         }
 
-        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-            for (final Path path : stream) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     addFilesTo(container, path, withFolders, extensions);
                 } else if (extensions == null || extensions.length < 1 || containsExtensions(extensions, path.getFileName())) {
@@ -140,7 +149,7 @@ public class FileUtils {
                 }
             }
 
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
@@ -152,7 +161,7 @@ public class FileUtils {
      * @param path       the file.
      * @return true if the file has a checked extension.
      */
-    public static boolean containsExtensions(@Nullable final String[] extensions, @NotNull final Path path) {
+    public static boolean containsExtensions(@Nullable String[] extensions, @NotNull Path path) {
         return containsExtensions(extensions, path.toString());
     }
 
@@ -163,8 +172,8 @@ public class FileUtils {
      * @param path       the path.
      * @return true if the path has a checked extension.
      */
-    public static boolean containsExtensions(@Nullable final String[] extensions, @NotNull final String path) {
-        return ArrayUtils.find(extensions, path, (extension, str) -> str.endsWith(extension)) != null;
+    public static boolean containsExtensions(@Nullable String[] extensions, @NotNull String path) {
+        return ArrayUtils.anyMatchR(extensions, path, String::endsWith);
     }
 
     /**
@@ -174,7 +183,7 @@ public class FileUtils {
      * @param path       the file.
      * @return true if the file has a checked extension.
      */
-    public static boolean containsExtensions(@Nullable final Array<String> extensions, @NotNull final Path path) {
+    public static boolean containsExtensions(@Nullable Array<String> extensions, @NotNull Path path) {
         return containsExtensions(extensions, path.toString());
     }
 
@@ -185,8 +194,8 @@ public class FileUtils {
      * @param path       the path.
      * @return true if the path has a checked extension.
      */
-    public static boolean containsExtensions(@Nullable final Array<String> extensions, @NotNull final String path) {
-        return extensions != null && extensions.search(path, (extension, str) -> str.endsWith(extension)) != null;
+    public static boolean containsExtensions(@Nullable Array<String> extensions, @NotNull String path) {
+        return extensions != null && extensions.anyMatchR(path, String::endsWith);
     }
 
     /**
@@ -196,7 +205,7 @@ public class FileUtils {
      * @param path       the file.
      * @return true if the file has a checked extension.
      */
-    public static boolean containsExtensions(@Nullable final Collection<String> extensions, @NotNull final Path path) {
+    public static boolean containsExtensions(@Nullable Collection<String> extensions, @NotNull Path path) {
         return containsExtensions(extensions, path.toString());
     }
 
@@ -207,8 +216,7 @@ public class FileUtils {
      * @param path       the path.
      * @return true if the path has a checked extension.
      */
-    public static boolean containsExtensions(@Nullable final Collection<String> extensions,
-                                             @NotNull final String path) {
+    public static boolean containsExtensions(@Nullable Collection<String> extensions, @NotNull String path) {
         return extensions != null && extensions.stream().anyMatch(path::endsWith);
     }
 
@@ -217,10 +225,10 @@ public class FileUtils {
      *
      * @param path the file to delete.
      */
-    public static void delete(@NotNull final Path path) {
+    public static void delete(@NotNull Path path) {
         try {
             deleteImpl(path);
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
@@ -230,7 +238,7 @@ public class FileUtils {
      *
      * @param path the file or folder.
      */
-    private static void deleteImpl(@NotNull final Path path) throws IOException {
+    private static void deleteImpl(@NotNull Path path) throws IOException {
         if (!Files.isDirectory(path)) {
             Files.delete(path);
         } else {
@@ -244,7 +252,7 @@ public class FileUtils {
      * @param path the path.
      * @return the extension or the path if the path doesn't have an extension.
      */
-    public static @NotNull String getExtension(@Nullable final String path) {
+    public static @NotNull String getExtension(@Nullable String path) {
         return getExtension(path, false);
     }
 
@@ -255,12 +263,24 @@ public class FileUtils {
      * @param toLowerCase true if need that extension was only in lower case.
      * @return the extension or the path if the path doesn't have an extension.
      */
-    public static @NotNull String getExtension(@Nullable final String path, final boolean toLowerCase) {
-        if (StringUtils.isEmpty(path)) return StringUtils.EMPTY;
-        final int index = path.lastIndexOf('.');
-        if (index == -1) return StringUtils.EMPTY;
-        final String result = path.substring(index + 1, path.length());
-        if (toLowerCase) return result.toLowerCase();
+    public static @NotNull String getExtension(@Nullable String path, boolean toLowerCase) {
+
+        if (StringUtils.isEmpty(path)) {
+            return StringUtils.EMPTY;
+        }
+
+        int index = path.lastIndexOf('.');
+
+        if (index == -1) {
+            return StringUtils.EMPTY;
+        }
+
+        String result = path.substring(index + 1, path.length());
+
+        if (toLowerCase) {
+            return result.toLowerCase();
+        }
+
         return result;
     }
 
@@ -270,8 +290,12 @@ public class FileUtils {
      * @param file the file.
      * @return the extension or the file name if the file doesn't have an extension.
      */
-    public static @NotNull String getExtension(@NotNull final Path file) {
-        if (Files.isDirectory(file)) return StringUtils.EMPTY;
+    public static @NotNull String getExtension(@NotNull Path file) {
+
+        if (Files.isDirectory(file)) {
+            return StringUtils.EMPTY;
+        }
+
         return getExtension(Objects.toString(file.getFileName()));
     }
 
@@ -282,8 +306,12 @@ public class FileUtils {
      * @param toLowerCase true if need that extension was only in lower case.
      * @return the extension or the file name if the file doesn't have an extension.
      */
-    public static @NotNull String getExtension(@NotNull final Path file, final boolean toLowerCase) {
-        if (Files.isDirectory(file)) return StringUtils.EMPTY;
+    public static @NotNull String getExtension(@NotNull Path file, boolean toLowerCase) {
+
+        if (Files.isDirectory(file)) {
+            return StringUtils.EMPTY;
+        }
+
         return getExtension(Objects.toString(file.getFileName()), toLowerCase);
     }
 
@@ -294,7 +322,7 @@ public class FileUtils {
      * @param extensions the extension filter.
      * @return the list of all files.
      */
-    public static @NotNull Array<Path> getFiles(@NotNull final Path dir, @Nullable final String... extensions) {
+    public static @NotNull Array<Path> getFiles(@NotNull Path dir, @Nullable String... extensions) {
         return getFiles(dir, false, extensions);
     }
 
@@ -306,13 +334,13 @@ public class FileUtils {
      * @param extensions  the extension filter.
      * @return the list of all files.
      */
-    public static @NotNull Array<Path> getFiles(@NotNull final Path dir, final boolean withFolders, @Nullable final String... extensions) {
+    public static @NotNull Array<Path> getFiles(@NotNull Path dir, boolean withFolders, @Nullable String... extensions) {
 
-        final Array<Path> result = ArrayFactory.newArray(Path.class);
+        Array<Path> result = ArrayFactory.newArray(Path.class);
 
         addFilesTo(result, dir, withFolders, extensions);
 
-        final UnsafeArray<Path> unsafeArray = result.asUnsafe();
+        UnsafeArray<Path> unsafeArray = result.asUnsafe();
         unsafeArray.trimToSize();
 
         return result;
@@ -325,14 +353,15 @@ public class FileUtils {
      * @param extensions the extensions filter.
      * @return the array of files.
      */
-    public static @NotNull Path[] getFiles(@NotNull final Package pckg, @Nullable final String... extensions) {
+    public static @NotNull Path[] getFiles(@NotNull Package pckg, @Nullable String... extensions) {
 
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader classLoader = Thread.currentThread()
+                .getContextClassLoader();
 
         Enumeration<URL> urls = null;
         try {
             urls = classLoader.getResources(pckg.getName().replace('.', '/'));
-        } catch (final IOException e) {
+        } catch (IOException e) {
             Utils.print(FileUtils.class, e);
         }
 
@@ -340,11 +369,11 @@ public class FileUtils {
             return EMPTY_PATHS;
         }
 
-        final Array<Path> files = ArrayFactory.newArray(Path.class);
+        Array<Path> files = ArrayFactory.newArray(Path.class);
 
         while (urls.hasMoreElements()) {
 
-            final URL next = urls.nextElement();
+            URL next = urls.nextElement();
 
             String path = next.getFile();
 
@@ -370,11 +399,17 @@ public class FileUtils {
      * @param filename the file name.
      * @return the file name without extension.
      */
-    public static @NotNull String getNameWithoutExtension(@NotNull final String filename) {
-        if (StringUtils.isEmpty(filename)) return filename;
+    public static @NotNull String getNameWithoutExtension(@NotNull String filename) {
 
-        final int index = filename.lastIndexOf('.');
-        if (index == -1) return filename;
+        if (StringUtils.isEmpty(filename)) {
+            return filename;
+        }
+
+        int index = filename.lastIndexOf('.');
+
+        if (index == -1) {
+            return filename;
+        }
 
         return filename.substring(0, index);
     }
@@ -385,15 +420,42 @@ public class FileUtils {
      * @param file the file.
      * @return the file name without extension.
      */
-    public static @NotNull String getNameWithoutExtension(@NotNull final Path file) {
+    public static @NotNull String getNameWithoutExtension(@NotNull Path file) {
 
-        final String filename = file.getFileName().toString();
-        if (StringUtils.isEmpty(filename)) return filename;
+        String filename = file.getFileName().toString();
 
-        final int index = filename.lastIndexOf('.');
-        if (index == -1) return filename;
+        if (StringUtils.isEmpty(filename)) {
+            return filename;
+        }
+
+        int index = filename.lastIndexOf('.');
+
+        if (index == -1) {
+            return filename;
+        }
 
         return filename.substring(0, index);
+    }
+
+    /**
+     * Read the file as a string from classpath.
+     *
+     * @param path the path to file.
+     * @return the string content of the file.
+     */
+    public static @NotNull String readFromClasspath(@NotNull String path) {
+        return read(FileUtils.class.getResourceAsStream(path));
+    }
+
+    /**
+     * Read the file as a string from classpath.
+     *
+     * @param cs the class to get a classloader.
+     * @param path the path to file.
+     * @return the string content of the file.
+     */
+    public static @NotNull String readFromClasspath(@NotNull Class<?> cs, @NotNull String path) {
+        return read(cs.getResourceAsStream(path));
     }
 
     /**
@@ -402,10 +464,10 @@ public class FileUtils {
      * @param path the path to file.
      * @return the string content of the file.
      */
-    public static @NotNull String read(@NotNull final String path) {
+    public static @NotNull String read(@NotNull String path) {
         try {
             return read(Files.newInputStream(Paths.get(path)));
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
@@ -416,13 +478,13 @@ public class FileUtils {
      * @param in the input stream.
      * @return the string content of the input stream.
      */
-    public static @NotNull String read(@NotNull final InputStream in) {
+    public static @NotNull String read(@NotNull InputStream in) {
 
-        final StringBuilder content = new StringBuilder();
+        StringBuilder content = new StringBuilder();
 
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 
-            final CharBuffer buffer = CharBuffer.allocate(512);
+            CharBuffer buffer = CharBuffer.allocate(512);
 
             while (reader.ready()) {
 
@@ -433,7 +495,7 @@ public class FileUtils {
                 content.append(buffer.array(), 0, buffer.limit());
             }
 
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
 
@@ -446,10 +508,10 @@ public class FileUtils {
      * @param file the file.
      * @return the string content of the file.
      */
-    public static @NotNull String read(@NotNull final Path file) {
+    public static @NotNull String read(@NotNull Path file) {
         try {
             return read(Files.newInputStream(file));
-        } catch (final IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
@@ -461,16 +523,17 @@ public class FileUtils {
      * @param file      the checked file.
      * @return the first free name.
      */
-    public static @NotNull String getFirstFreeName(@NotNull final Path directory, @NotNull final Path file) {
+    public static @NotNull String getFirstFreeName(@NotNull Path directory, @NotNull Path file) {
 
-        String initFileName = file.getFileName().toString();
+        String initFileName = file.getFileName()
+                .toString();
 
         if (!Files.exists(directory.resolve(initFileName))) {
             return initFileName;
         }
 
-        final String extension = getExtension(initFileName);
-        final String nameWithoutExtension = getNameWithoutExtension(initFileName);
+        String extension = getExtension(initFileName);
+        String nameWithoutExtension = getNameWithoutExtension(initFileName);
 
         String result = nameWithoutExtension + "_1." + extension;
 
@@ -487,7 +550,7 @@ public class FileUtils {
      * @param destination the destination folder.
      * @param zipFile     the zip file.
      */
-    public static void unzip(@NotNull final Path destination, @NotNull final Path zipFile) {
+    public static void unzip(@NotNull Path destination, @NotNull Path zipFile) {
 
         if (!Files.exists(destination)) {
             throw new IllegalArgumentException("The folder " + destination + " doesn't exist.");
@@ -583,6 +646,16 @@ public class FileUtils {
     }
 
     /**
+     * Get a {@link URI} of the {@link URL}.
+     *
+     * @param url the url.
+     * @return the {@link URI}.
+     */
+    public static @NotNull URI getUri(@NotNull URL url) {
+        return Utils.get(url, URL::toURI);
+    }
+
+    /**
      * Get a {@link URL} of the file.
      *
      * @param file the file.
@@ -612,6 +685,148 @@ public class FileUtils {
     public static @NotNull Path walkFileTree(@NotNull Path start, @NotNull FileVisitor<? super Path> visitor) {
         try {
             return Files.walkFileTree(start, visitor);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * @see Files#createTempFile(String, String, FileAttribute[])
+     */
+    public static @NotNull Path createTempFile(
+            @NotNull String prefix,
+            @NotNull String suffix,
+            @Nullable FileAttribute<?>... attrs
+    ) {
+        try {
+            return Files.createTempFile(prefix, suffix, attrs);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * Apply each sub-file of the directory to the consumer.
+     *
+     * @param directory the directory.
+     * @param consumer  the consumer.
+     */
+    public static void forEach(@NotNull Path directory, @NotNull Consumer<@NotNull Path> consumer) {
+        validateDirectory(directory);
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            for (Path path : stream) {
+                consumer.accept(path);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static void validateDirectory(@NotNull Path directory) {
+        if (!Files.isDirectory(directory)) {
+            throw new IllegalArgumentException("The file " + directory + " isn't a directory.");
+        } else if (!Files.exists(directory)) {
+            throw new IllegalArgumentException("The file " + directory + " isn't exists.");
+        }
+    }
+
+    /**
+     * Apply each sub-file of the directory to the consumer.
+     *
+     * @param directory the directory.
+     * @param argument  the argument.
+     * @param consumer  the consumer.
+     * @param <T>       the argument's type.
+     */
+    public static <T> void forEach(
+            @NotNull Path directory,
+            @NotNull T argument,
+            @NotNull BiConsumer<@NotNull Path, @NotNull T> consumer
+    ) {
+
+        validateDirectory(directory);
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            for (Path path : stream) {
+                consumer.accept(path, argument);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * Get children's stream of the directory.
+     *
+     * @param directory the directory.
+     * @return children's stream of the directory.
+     */
+    public static @NotNull Stream<Path> stream(@NotNull Path directory) {
+        validateDirectory(directory);
+
+        var files = Array.ofType(Path.class);
+
+        try (var stream = Files.newDirectoryStream(directory)) {
+            stream.forEach(files::add);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        return files.stream();
+    }
+
+    /**
+     * Apply each sub-file of the directory to the consumer.
+     *
+     * @param directory the directory.
+     * @param argument  the argument.
+     * @param consumer  the consumer.
+     * @param <T>       the argument's type.
+     */
+    public static <T> void forEachR(
+            @NotNull Path directory,
+            @NotNull T argument,
+            @NotNull BiConsumer<@NotNull T, @NotNull Path> consumer
+    ) {
+
+        validateDirectory(directory);
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            for (Path path : stream) {
+                consumer.accept(argument, path);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * Apply each sub-file of the directory to the consumer.
+     *
+     * @param directory the directory.
+     * @param argument  the argument.
+     * @param condition the condition.
+     * @param consumer  the consumer.
+     * @param <T>       the argument's type.
+     */
+    public static <T> void forEachR(
+            @NotNull Path directory,
+            @NotNull T argument,
+            @NotNull Predicate<@NotNull Path> condition,
+            @NotNull BiConsumer<@NotNull T, @NotNull Path> consumer
+    ) {
+
+        validateDirectory(directory);
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+
+            for (Path path : stream) {
+                if (condition.test(path)) {
+                    consumer.accept(argument, path);
+                }
+            }
+
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

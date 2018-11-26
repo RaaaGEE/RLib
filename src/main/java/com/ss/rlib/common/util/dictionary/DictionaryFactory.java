@@ -1,5 +1,7 @@
 package com.ss.rlib.common.util.dictionary;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * The factory for creating new {@link Dictionary}.
  *
@@ -7,14 +9,16 @@ package com.ss.rlib.common.util.dictionary;
  */
 public final class DictionaryFactory {
 
+    public static final ObjectDictionary<?, ?> EMPTY_OD = new ReadOnlyFastObjectDictionary<>();
+
     /**
      * New concurrent atomic integer dictionary concurrent integer dictionary.
      *
      * @param <V> the type parameter
-     * @return the new {@link FinalConcurrentAtomicARSWLockIntegerDictionary}.
+     * @return the new {@link ConcurrentAtomicARSWLockIntegerDictionary}.
      */
-    public static <V> ConcurrentIntegerDictionary<V> newConcurrentAtomicIntegerDictionary() {
-        return new FinalConcurrentAtomicARSWLockIntegerDictionary<>();
+    public static <V> @NotNull ConcurrentIntegerDictionary<V> newConcurrentAtomicIntegerDictionary() {
+        return new ConcurrentAtomicARSWLockIntegerDictionary<>();
     }
 
     /**
@@ -23,20 +27,23 @@ public final class DictionaryFactory {
      * @param <V>          the type parameter
      * @param loadFactor   the load factor
      * @param initCapacity the init capacity
-     * @return the new {@link FinalConcurrentAtomicARSWLockIntegerDictionary}.
+     * @return the new {@link ConcurrentAtomicARSWLockIntegerDictionary}.
      */
-    public static <V> ConcurrentIntegerDictionary<V> newConcurrentAtomicIntegerDictionary(final float loadFactor, final int initCapacity) {
-        return new FinalConcurrentAtomicARSWLockIntegerDictionary<>(loadFactor, initCapacity);
+    public static <V> @NotNull ConcurrentIntegerDictionary<V> newConcurrentAtomicIntegerDictionary(
+            float loadFactor,
+            int initCapacity
+    ) {
+        return new ConcurrentAtomicARSWLockIntegerDictionary<>(loadFactor, initCapacity);
     }
 
     /**
      * New concurrent atomic long dictionary concurrent long dictionary.
      *
      * @param <V> the type parameter
-     * @return the new {@link FinalConcurrentAtomicARSWLockLongDictionary}.
+     * @return the new {@link ConcurrentAtomicARSWLockLongDictionary}.
      */
-    public static <V> ConcurrentLongDictionary<V> newConcurrentAtomicLongDictionary() {
-        return new FinalConcurrentAtomicARSWLockLongDictionary<>();
+    public static <V> @NotNull ConcurrentLongDictionary<V> newConcurrentAtomicLongDictionary() {
+        return new ConcurrentAtomicARSWLockLongDictionary<>();
     }
 
     /**
@@ -45,10 +52,13 @@ public final class DictionaryFactory {
      * @param <V>          the type parameter
      * @param loadFactor   the load factor
      * @param initCapacity the init capacity
-     * @return the new {@link FinalConcurrentAtomicARSWLockLongDictionary}.
+     * @return the new {@link ConcurrentAtomicARSWLockLongDictionary}.
      */
-    public static <V> ConcurrentLongDictionary<V> newConcurrentAtomicLongDictionary(final float loadFactor, final int initCapacity) {
-        return new FinalConcurrentAtomicARSWLockLongDictionary<>(loadFactor, initCapacity);
+    public static <V> @NotNull ConcurrentLongDictionary<V> newConcurrentAtomicLongDictionary(
+            float loadFactor,
+            int initCapacity
+    ) {
+        return new ConcurrentAtomicARSWLockLongDictionary<>(loadFactor, initCapacity);
     }
 
     /**
@@ -56,10 +66,10 @@ public final class DictionaryFactory {
      *
      * @param <K> the type parameter
      * @param <V> the type parameter
-     * @return the new {@link FinalConcurrentAtomicARSWLockObjectDictionary}.
+     * @return the new {@link ConcurrentAtomicARSWLockObjectDictionary}.
      */
-    public static <K, V> ConcurrentObjectDictionary<K, V> newConcurrentAtomicObjectDictionary() {
-        return new FinalConcurrentAtomicARSWLockObjectDictionary<>();
+    public static <K, V> @NotNull ConcurrentObjectDictionary<K, V> newConcurrentAtomicObjectDictionary() {
+        return new ConcurrentAtomicARSWLockObjectDictionary<>();
     }
 
     /**
@@ -69,20 +79,23 @@ public final class DictionaryFactory {
      * @param <V>          the type parameter
      * @param loadFactor   the load factor
      * @param initCapacity the init capacity
-     * @return the new {@link FinalConcurrentAtomicARSWLockLongDictionary}.
+     * @return the new {@link ConcurrentAtomicARSWLockLongDictionary}.
      */
-    public static <K, V> ConcurrentObjectDictionary<K, V> newConcurrentAtomicObjectDictionary(final float loadFactor, final int initCapacity) {
-        return new FinalConcurrentAtomicARSWLockObjectDictionary<>(loadFactor, initCapacity);
+    public static <K, V> @NotNull ConcurrentObjectDictionary<K, V> newConcurrentAtomicObjectDictionary(
+            float loadFactor,
+            int initCapacity
+    ) {
+        return new ConcurrentAtomicARSWLockObjectDictionary<>(loadFactor, initCapacity);
     }
 
     /**
      * New integer dictionary integer dictionary.
      *
      * @param <V> the type parameter
-     * @return the new {@link FinalFastIntegerDictionary}.
+     * @return the new {@link FastIntegerDictionary}.
      */
-    public static <V> IntegerDictionary<V> newIntegerDictionary() {
-        return new FinalFastIntegerDictionary<>();
+    public static <V> @NotNull IntegerDictionary<V> newIntegerDictionary() {
+        return new FastIntegerDictionary<>();
     }
 
     /**
@@ -91,56 +104,68 @@ public final class DictionaryFactory {
      * @param <V>          the type parameter
      * @param loadFactor   the load factor
      * @param initCapacity the init capacity
-     * @return the new {@link FinalFastIntegerDictionary}.
+     * @return the new {@link FastIntegerDictionary}.
      */
-    public static <V> IntegerDictionary<V> newIntegerDictionary(final float loadFactor, final int initCapacity) {
-        return new FinalFastIntegerDictionary<>(loadFactor, initCapacity);
+    public static <V> @NotNull IntegerDictionary<V> newIntegerDictionary(float loadFactor, int initCapacity) {
+        return new FastIntegerDictionary<>(loadFactor, initCapacity);
     }
 
     /**
      * New long dictionary long dictionary.
      *
      * @param <V> the type parameter
-     * @return the new {@link FinalFastLongDictionary}.
+     * @return the new {@link FastLongDictionary}.
      */
-    public static <V> LongDictionary<V> newLongDictionary() {
-        return new FinalFastLongDictionary<>();
+    public static <V> @NotNull LongDictionary<V> newLongDictionary() {
+        return new FastLongDictionary<>();
     }
 
     /**
      * New long dictionary long dictionary.
      *
-     * @param <V>          the type parameter
      * @param loadFactor   the load factor
      * @param initCapacity the init capacity
-     * @return the new {@link FinalFastLongDictionary}.
+     * @param <V>          the value's type.
+     * @return the new {@link FastLongDictionary}.
      */
-    public static <V> LongDictionary<V> newLongDictionary(final float loadFactor, final int initCapacity) {
-        return new FinalFastLongDictionary<>(loadFactor, initCapacity);
+    public static <V> @NotNull LongDictionary<V> newLongDictionary(float loadFactor, int initCapacity) {
+        return new FastLongDictionary<>(loadFactor, initCapacity);
     }
 
     /**
      * New object dictionary object dictionary.
      *
-     * @param <K> the type parameter
-     * @param <V> the type parameter
-     * @return the new {@link FinalFastObjectDictionary}.
+     * @param <K> the key's  type.
+     * @param <V> the value's type.
+     * @return the new {@link FastObjectDictionary}.
      */
-    public static <K, V> ObjectDictionary<K, V> newObjectDictionary() {
-        return new FinalFastObjectDictionary<>();
+    public static <K, V> @NotNull ObjectDictionary<K, V> newObjectDictionary() {
+        return new FastObjectDictionary<>();
     }
 
     /**
      * New object dictionary object dictionary.
      *
-     * @param <K>          the type parameter
-     * @param <V>          the type parameter
      * @param loadFactor   the load factor
      * @param initCapacity the init capacity
-     * @return the new {@link FinalFastObjectDictionary}.
+     * @param <K>    the key's  type.
+     * @param <V>    the value's type.
+     * @return the new {@link FastObjectDictionary}.
      */
-    public static <K, V> ObjectDictionary<K, V> newObjectDictionary(final float loadFactor, final int initCapacity) {
-        return new FinalFastObjectDictionary<>(loadFactor, initCapacity);
+    public static <K, V> @NotNull ObjectDictionary<K, V> newObjectDictionary(float loadFactor, int initCapacity) {
+        return new FastObjectDictionary<>(loadFactor, initCapacity);
+    }
+
+    /**
+     * New read-only object dictionary object dictionary.
+     *
+     * @param values the values.
+     * @param <K>    the key's  type.
+     * @param <V>    the value's type.
+     * @return the new {@link ReadOnlyFastObjectDictionary}.
+     */
+    public static <K, V> @NotNull ObjectDictionary<K, V> newReadOnlyObjectDictionary(Object... values) {
+        return new ReadOnlyFastObjectDictionary<>(values);
     }
 
     private DictionaryFactory() {

@@ -81,6 +81,19 @@ public final class ArrayUtils {
     }
 
     /**
+     * Fill the array using the factory.
+     *
+     * @param array   the array.
+     * @param factory the element's factory.
+     * @since 8.1.0
+     */
+    public static void fill(@NotNull char[] array, @NotNull CharSupplier factory) {
+        for (int i = 0; i < array.length; i++) {
+            array[i] = factory.getAsChar();
+        }
+    }
+
+    /**
      * Fill the array using the factory which receives array's index.
      *
      * @param array   the array.
@@ -135,15 +148,31 @@ public final class ArrayUtils {
     /**
      * Combine the two arrays.
      *
-     * @param <T>   the type parameter
-     * @param <E>   the type parameter
+     * @param <T>   the base array's component type.
+     * @param <E>   the added array's component type.
      * @param base  the source array.
      * @param added the add array.
-     * @param type  the type
      * @return the combined array.
      */
-    public static <T, E extends T> @NotNull T[] combine(@Nullable final T[] base, @Nullable final E[] added,
-                                                        @NotNull final Class<T> type) {
+    public static <T, E extends T> @NotNull T[] combine(@Nullable T[] base, @Nullable E[] added) {
+        return combine(base, added, ClassUtils.unsafeCast(base.getClass().getComponentType()));
+    }
+
+    /**
+     * Combine the two arrays.
+     *
+     * @param <T>   the base array's component type.
+     * @param <E>   the added array's component type.
+     * @param base  the source array.
+     * @param added the add array.
+     * @param type  the base array's component type.
+     * @return the combined array.
+     */
+    public static <T, E extends T> @NotNull T[] combine(
+            @Nullable T[] base,
+            @Nullable E[] added,
+            @NotNull Class<T> type
+    ) {
 
         if (base == null) {
             return added == null ? create(type, 0) : added;
@@ -151,12 +180,17 @@ public final class ArrayUtils {
             return base;
         }
 
-        final T[] result = create(type, base.length + added.length);
+        T[] result = create(type, base.length + added.length);
 
         int index = 0;
 
-        for (T object : base) result[index++] = object;
-        for (E object : added) result[index++] = object;
+        for (T object : base) {
+            result[index++] = object;
+        }
+
+        for (E object : added) {
+            result[index++] = object;
+        }
 
         return result;
     }
@@ -450,19 +484,42 @@ public final class ArrayUtils {
      * @param array the array.
      * @return the string presentation.
      */
-    public static @NotNull String toString(@NotNull final Array<?> array) {
-        if (array.isEmpty()) return "[]";
+    public static @NotNull String toString(@NotNull Array<?> array) {
+        return toString(array, Object::toString);
+    }
 
-        final String className = array.array().getClass().getSimpleName();
-        final StringBuilder builder = new StringBuilder(className.substring(0, className.length() - 1));
+    /**
+     * Convert the array to a string presentation.
+     *
+     * @param array    the array.
+     * @param toString the to string function.
+     * @return the string presentation.
+     */
+    public static <T> @NotNull String toString(@NotNull Array<T> array, @NotNull Function<T, String> toString) {
+
+        if (array.isEmpty()) {
+            return "[]";
+        }
+
+        String className = array.array()
+                .getClass()
+                .getSimpleName();
+
+        StringBuilder builder = new StringBuilder(className.substring(0, className.length() - 1));
 
         for (int i = 0, length = array.size() - 1; i <= length; i++) {
-            builder.append(String.valueOf(array.get(i)));
-            if (i == length) break;
+
+            builder.append(toString.apply(array.get(i)));
+
+            if (i == length) {
+                break;
+            }
+
             builder.append(", ");
         }
 
         builder.append("]");
+
         return builder.toString();
     }
 
@@ -643,6 +700,7 @@ public final class ArrayUtils {
      * @param function the function.
      * @return the result of the function.
      */
+    @Deprecated
     public static <T, R> @Nullable R getInWriteLock(@NotNull final ConcurrentArray<T> array,
                                                     @NotNull final Function<Array<T>, R> function) {
         if (array.isEmpty()) return null;
@@ -661,6 +719,7 @@ public final class ArrayUtils {
      * @param array    the array.
      * @param function the function.
      */
+    @Deprecated
     public static <T> void runInWriteLock(@Nullable ConcurrentArray<T> array, @NotNull Consumer<Array<T>> function) {
 
         if (array == null) {
@@ -682,6 +741,7 @@ public final class ArrayUtils {
      * @param array    the array.
      * @param function the function.
      */
+    @Deprecated
     public static <T> void runInReadLock(@NotNull final ConcurrentArray<T> array,
                                          @NotNull final Consumer<@NotNull Array<T>> function) {
         if (array.isEmpty()) return;
@@ -702,6 +762,7 @@ public final class ArrayUtils {
      * @param function the function.
      * @return the result of the function.
      */
+    @Deprecated
     public static <T, R> @Nullable R getInReadLock(@NotNull final ConcurrentArray<T> array,
                                                    @NotNull final Function<Array<T>, R> function) {
         if (array.isEmpty()) return null;
@@ -721,6 +782,7 @@ public final class ArrayUtils {
      * @param function the function.
      * @return the sum.
      */
+    @Deprecated
     public static <T> int sumInReadLock(@NotNull final ConcurrentArray<T> array,
                                         @NotNull final FunctionInt<T> function) {
         if (array.isEmpty()) return 0;
@@ -752,6 +814,7 @@ public final class ArrayUtils {
      * @param function the function.
      * @return the result of the function.
      */
+    @Deprecated
     public static <T, V, R> @Nullable R getInWriteLock(@NotNull final ConcurrentArray<T> array,
                                                        @Nullable final V argument,
                                                        @NotNull final BiFunction<Array<T>, V, R> function) {
@@ -773,6 +836,7 @@ public final class ArrayUtils {
      * @param argument the argument.
      * @param function the function.
      */
+    @Deprecated
     public static <T, V> void runInWriteLock(
             @NotNull ConcurrentArray<T> array,
             @Nullable V argument,
@@ -797,6 +861,7 @@ public final class ArrayUtils {
      * @param function the function.
      * @return the result of the function.
      */
+    @Deprecated
     public static <T, V, R> @Nullable R getInReadLock(@NotNull final ConcurrentArray<T> array,
                                                       @Nullable final V argument,
                                                       @NotNull final BiFunction<Array<T>, V, R> function) {
@@ -819,6 +884,7 @@ public final class ArrayUtils {
      * @param function the function.
      * @return the result of the function.
      */
+    @Deprecated
     public static <T, R> @Nullable R getInReadLock(@NotNull final ConcurrentArray<T> array, final int argument,
                                                    @NotNull final ObjectIntFunction<Array<T>, R> function) {
         if (array.isEmpty()) return null;
@@ -840,6 +906,7 @@ public final class ArrayUtils {
      * @param function the function.
      * @return the result of the function.
      */
+    @Deprecated
     public static <T, R> @Nullable R getInReadLockL(@NotNull final ConcurrentArray<T> array, final long argument,
                                                     @NotNull final ObjectLongFunction<Array<T>, R> function) {
         if (array.isEmpty()) return null;
@@ -860,6 +927,7 @@ public final class ArrayUtils {
      * @param argument the argument.
      * @param function the function.
      */
+    @Deprecated
     public static <T, V> void runInReadLock(@NotNull final ConcurrentArray<T> array, @Nullable final V argument,
                                             @NotNull final BiConsumer<@NotNull Array<T>, V> function) {
         if (array.isEmpty()) return;
@@ -882,6 +950,7 @@ public final class ArrayUtils {
      * @param second   the second argument.
      * @param function the function.
      */
+    @Deprecated
     public static <T, F, S> void runInWriteLock(@NotNull final ConcurrentArray<T> array, @Nullable final F first,
                                                 @Nullable S second,
                                                 @NotNull final TripleConsumer<@NotNull Array<T>, F, S> function) {
@@ -905,6 +974,7 @@ public final class ArrayUtils {
      * @param filter   the filter.
      * @param function the function.
      */
+    @Deprecated
     public static <T, F, S> void runInWriteLock(@NotNull final ConcurrentArray<T> array, @Nullable final F first,
                                                 @Nullable final S second,
                                                 @NotNull final TriplePredicate<@NotNull Array<T>, F, S> filter,
@@ -932,6 +1002,7 @@ public final class ArrayUtils {
      * @param second   the second argument.
      * @param function the function.
      */
+    @Deprecated
     public static <T, F, S> void runInReadLock(@NotNull final ConcurrentArray<T> array, @Nullable final F first,
                                                @Nullable final S second,
                                                @NotNull final TripleConsumer<@NotNull Array<T>, F, S> function) {
@@ -1257,14 +1328,55 @@ public final class ArrayUtils {
      * @param condition the condition.
      * @return the element or null.
      */
-    public static <T> @Nullable T find(@Nullable final T[] array, @NotNull final Predicate<@Nullable T> condition) {
+    public static <T> @Nullable T findAny(@Nullable T[] array, @NotNull Predicate<? super T> condition) {
 
         if (array == null || array.length < 1) {
             return null;
         }
 
-        for (final T element : array) {
+        for (T element : array) {
             if (condition.test(element)) {
+                return element;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Return true if there is at least an element for the condition.
+     *
+     * @param <T>       the array's element type.
+     * @param array     the array.
+     * @param condition the condition.
+     * @return true if there is at least an element for the condition.
+     */
+    public static <T> boolean anyMatch(@Nullable T[] array, @NotNull Predicate<? super T> condition) {
+        return findAny(array, condition) != null;
+    }
+
+    /**
+     * Find an element in the array using the condition.
+     *
+     * @param <T>       the array's element type.
+     * @param <F>       the argument's type.
+     * @param array     the array.
+     * @param argument  the argument.
+     * @param condition the condition.
+     * @return the element or null.
+     */
+    public static <T, F> @Nullable T findAny(
+            @Nullable T[] array,
+            @Nullable F argument,
+            @NotNull BiPredicate<? super T, F> condition
+    ) {
+
+        if (array == null || array.length < 1) {
+            return null;
+        }
+
+        for (T element : array) {
+            if (condition.test(element, argument)) {
                 return element;
             }
         }
@@ -1282,20 +1394,41 @@ public final class ArrayUtils {
      * @param condition the condition.
      * @return the element or null.
      */
-    public static <T, F> @Nullable T find(@Nullable final T[] array, @Nullable final F argument,
-                                          @NotNull final BiPredicate<@Nullable T, @Nullable F> condition) {
+    public static <T, F> @Nullable T findAnyR(
+            @Nullable T[] array,
+            @Nullable F argument,
+            @NotNull BiPredicate<F, ? super T> condition
+    ) {
 
         if (array == null || array.length < 1) {
             return null;
         }
 
-        for (final T element : array) {
-            if (condition.test(element, argument)) {
+        for (T element : array) {
+            if (condition.test(argument, element)) {
                 return element;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Return true if there is at least an element for the condition.
+     *
+     * @param <T>       the array's element type.
+     * @param <F>       the argument's type.
+     * @param array     the array.
+     * @param argument  the argument.
+     * @param condition the condition.
+     * @return true if there is at least an element for the condition.
+     */
+    public static <T, F> boolean anyMatchR(
+            @Nullable T[] array,
+            @Nullable F argument,
+            @NotNull BiPredicate<F, ? super T> condition
+    ) {
+        return findAnyR(array, argument, condition) != null;
     }
 
     /**
@@ -1310,14 +1443,24 @@ public final class ArrayUtils {
      * @param condition  the condition.
      * @return the element or null.
      */
-    public static <T, R, F> @Nullable R find(@Nullable final T[] array, @Nullable final F argument,
-                                             @NotNull final Function<T, R> getElement,
-                                             @NotNull final BiPredicate<R, F> condition) {
-        if (array == null || array.length < 1) return null;
+    public static <T, R, F> @Nullable R findAny(
+            @Nullable T[] array,
+            @Nullable F argument,
+            @NotNull Function<T, R> getElement,
+            @NotNull BiPredicate<R, F> condition
+    ) {
 
-        for (final T element : array) {
-            final R subElement = getElement.apply(element);
-            if (condition.test(subElement, argument)) return subElement;
+        if (array == null || array.length < 1) {
+            return null;
+        }
+
+        for (T element : array) {
+
+            R subElement = getElement.apply(element);
+
+            if (condition.test(subElement, argument)) {
+                return subElement;
+            }
         }
 
         return null;
@@ -1336,16 +1479,29 @@ public final class ArrayUtils {
      * @param secondCond the second cond
      * @return the element or null.
      */
-    public static <T, R, F> @Nullable R find(@Nullable final T[] array, @Nullable final F argument,
-                                             @NotNull final Predicate<T> condition,
-                                             @NotNull final Function<T, R> getElement,
-                                             @NotNull final BiPredicate<R, F> secondCond) {
-        if (array == null || array.length < 1) return null;
+    public static <T, R, F> @Nullable R findAny(
+            @Nullable T[] array,
+            @Nullable F argument,
+            @NotNull Predicate<T> condition,
+            @NotNull Function<T, R> getElement,
+            @NotNull BiPredicate<R, F> secondCond
+    ) {
 
-        for (final T element : array) {
-            if (!condition.test(element)) continue;
-            final R subElement = getElement.apply(element);
-            if (secondCond.test(subElement, argument)) return subElement;
+        if (array == null || array.length < 1) {
+            return null;
+        }
+
+        for (T element : array) {
+
+            if (!condition.test(element)) {
+                continue;
+            }
+
+            R subElement = getElement.apply(element);
+
+            if (secondCond.test(subElement, argument)) {
+                return subElement;
+            }
         }
 
         return null;
@@ -1361,12 +1517,16 @@ public final class ArrayUtils {
      * @return the element or null.
      */
 
-    public static <T> @Nullable T find(@Nullable final T[] array, final int argument,
-                                       @NotNull final ObjectIntPredicate<T> condition) {
-        if (array == null || array.length < 1) return null;
+    public static <T> @Nullable T findAny(@Nullable T[] array, int argument, @NotNull ObjectIntPredicate<T> condition) {
 
-        for (final T element : array) {
-            if (condition.test(element, argument)) return element;
+        if (array == null || array.length < 1) {
+            return null;
+        }
+
+        for (T element : array) {
+            if (condition.test(element, argument)) {
+                return element;
+            }
         }
 
         return null;
@@ -1384,13 +1544,19 @@ public final class ArrayUtils {
      * @return the element or null.
      */
 
-    public static <T, R> @Nullable R find(@Nullable final T[] array, final int argument,
-                                          @NotNull final Function<T, R> getElement,
-                                          @NotNull final ObjectIntPredicate<R> condition) {
-        if (array == null || array.length < 1) return null;
+    public static <T, R> @Nullable R findAny(
+            @Nullable T[] array,
+            int argument,
+            @NotNull Function<T, R> getElement,
+            @NotNull ObjectIntPredicate<R> condition
+    ) {
 
-        for (final T element : array) {
-            final R subElement = getElement.apply(element);
+        if (array == null || array.length < 1) {
+            return null;
+        }
+
+        for (T element : array) {
+            R subElement = getElement.apply(element);
             if (condition.test(subElement, argument)) {
                 return subElement;
             }
@@ -1412,18 +1578,26 @@ public final class ArrayUtils {
      * @return the element or null.
      */
 
-    public static <T, R> @Nullable R find(@Nullable final T[] array, final int argument,
-                                          @NotNull final Predicate<T> firstCond,
-                                          @NotNull final Function<T, R> getElement,
-                                          @NotNull final ObjectIntPredicate<R> secondCond) {
+    public static <T, R> @Nullable R findAny(
+            @Nullable T[] array,
+            int argument,
+            @NotNull Predicate<T> firstCond,
+            @NotNull Function<T, R> getElement,
+            @NotNull ObjectIntPredicate<R> secondCond
+    ) {
 
         if (array == null || array.length < 1) {
             return null;
         }
 
-        for (final T element : array) {
-            if (!firstCond.test(element)) continue;
-            final R subElement = getElement.apply(element);
+        for (T element : array) {
+
+            if (!firstCond.test(element)) {
+                continue;
+            }
+
+            R subElement = getElement.apply(element);
+
             if (secondCond.test(subElement, argument)) {
                 return subElement;
             }
@@ -1444,18 +1618,26 @@ public final class ArrayUtils {
      * @param secondCond the second condition.
      * @return the element or null.
      */
-    public static <T, R> @Nullable R findL(@Nullable final T[] array, final long argument,
-                                           @NotNull final Predicate<T> firstCond,
-                                           @NotNull final Function<T, R> getElement,
-                                           @NotNull final ObjectLongPredicate<R> secondCond) {
+    public static <T, R> @Nullable R findL(
+            @Nullable T[] array,
+            long argument,
+            @NotNull Predicate<T> firstCond,
+            @NotNull Function<T, R> getElement,
+            @NotNull ObjectLongPredicate<R> secondCond
+    ) {
 
         if (array == null || array.length < 1) {
             return null;
         }
 
-        for (final T element : array) {
-            if (!firstCond.test(element)) continue;
-            final R subElement = getElement.apply(element);
+        for (T element : array) {
+
+            if (!firstCond.test(element)) {
+                continue;
+            }
+
+            R subElement = getElement.apply(element);
+
             if (secondCond.test(subElement, argument)) {
                 return subElement;
             }
@@ -1528,21 +1710,95 @@ public final class ArrayUtils {
      * @param condition the condition.
      * @return the element or null.
      */
-    public static <T, F, S> @Nullable T find(@Nullable final T[] array, @Nullable final F first,
-                                             @Nullable final S second,
-                                             @NotNull final TriplePredicate<T, F, S> condition) {
+    public static <T, F, S> @Nullable T findAny(
+            @Nullable T[] array,
+            @Nullable F first,
+            @Nullable S second,
+            @NotNull TriplePredicate<T, F, S> condition
+    ) {
 
         if (array == null || array.length < 1) {
             return null;
         }
 
-        for (final T element : array) {
+        for (T element : array) {
             if (condition.test(element, first, second)) {
                 return element;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Return true if the array is null or empty.
+     *
+     * @param array the array.
+     * @return true if the array is null or empty.
+     */
+    public static boolean isEmpty(@Nullable byte[] array) {
+        return array == null || array.length == 0;
+    }
+
+    /**
+     * Return true if the array is null or empty.
+     *
+     * @param array the array.
+     * @return true if the array is null or empty.
+     */
+    public static boolean isEmpty(@Nullable short[] array) {
+        return array == null || array.length == 0;
+    }
+
+    /**
+     * Return true if the array is null or empty.
+     *
+     * @param array the array.
+     * @return true if the array is null or empty.
+     */
+    public static boolean isEmpty(@Nullable char[] array) {
+        return array == null || array.length == 0;
+    }
+
+    /**
+     * Return true if the array is null or empty.
+     *
+     * @param array the array.
+     * @return true if the array is null or empty.
+     */
+    public static boolean isEmpty(@Nullable int[] array) {
+        return array == null || array.length == 0;
+    }
+
+
+    /**
+     * Return true if the array is null or empty.
+     *
+     * @param array the array.
+     * @return true if the array is null or empty.
+     */
+    public static boolean isEmpty(@Nullable long[] array) {
+        return array == null || array.length == 0;
+    }
+
+    /**
+     * Return true if the array is null or empty.
+     *
+     * @param array the array.
+     * @return true if the array is null or empty.
+     */
+    public static boolean isEmpty(@Nullable float[] array) {
+        return array == null || array.length == 0;
+    }
+
+    /**
+     * Return true if the array is null or empty.
+     *
+     * @param array the array.
+     * @return true if the array is null or empty.
+     */
+    public static boolean isEmpty(@Nullable double[] array) {
+        return array == null || array.length == 0;
     }
 
     private ArrayUtils() {

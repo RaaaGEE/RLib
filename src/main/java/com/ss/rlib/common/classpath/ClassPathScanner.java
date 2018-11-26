@@ -1,11 +1,14 @@
 package com.ss.rlib.common.classpath;
 
+import com.ss.rlib.common.classpath.impl.ClassPathScannerImpl;
 import com.ss.rlib.common.util.array.Array;
 import com.ss.rlib.common.util.array.ArrayFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.function.Predicate;
 
 /**
@@ -16,6 +19,36 @@ import java.util.function.Predicate;
 public interface ClassPathScanner {
 
     String JAR_EXTENSION = ".jar";
+
+    ClassPathScanner NULL_SCANNER = null;
+
+    ClassPathScanner EMPTY_SCANNER = new ClassPathScannerImpl(ClassPathScanner.class.getClassLoader()) {
+
+        @Override
+        public void addClasses(@NotNull Array<Class<?>> classes) {
+        }
+
+        @Override
+        public void addAdditionalPath(@NotNull String path) {
+        }
+
+        @Override
+        public void addAdditionalPaths(@NotNull String[] paths) {
+        }
+
+        @Override
+        public void addResources(@NotNull Array<String> resources) {
+        }
+
+        @Override
+        public void scan(@Nullable Predicate<String> filter) {
+        }
+    };
+
+    URLClassLoader EMPTY_CLASS_LOADER =
+            new URLClassLoader(new URL[0], ClassPathScanner.class.getClassLoader());
+
+    URLClassLoader NULL_CLASS_LOADER = null;
 
     /**
      * Add some classes to this scanner.
@@ -56,6 +89,7 @@ public interface ClassPathScanner {
      *
      * @param container      the container.
      * @param interfaceClass the interface class.
+     * @param <T> the interface's type.
      */
     <T> void findImplements(@NotNull Array<Class<T>> container, @NotNull Class<T> interfaceClass);
 
@@ -63,6 +97,7 @@ public interface ClassPathScanner {
      * Find all inheriting classes of the parent class.
      *
      * @param parentClass the parent class.
+     * @param <T> the classes type.
      * @return the list of found inherited classes.
      */
     default <T> @NotNull Array<Class<T>> findInherited(@NotNull Class<T> parentClass) {
@@ -76,6 +111,7 @@ public interface ClassPathScanner {
      *
      * @param container   the container.
      * @param parentClass the parent class.
+     * @param <T> the parent classes type.
      */
     <T> void findInherited(@NotNull Array<Class<T>> container, @NotNull Class<T> parentClass);
 

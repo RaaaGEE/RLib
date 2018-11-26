@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
 /**
  * The fast implementation of the array. This array is not threadsafe.
  *
- * @param <E> the type parameter
+ * @param <E> the element's type.
  * @author JavaSaBr
  */
 public class FastArray<E> extends AbstractArray<E> implements UnsafeArray<E> {
@@ -31,11 +31,11 @@ public class FastArray<E> extends AbstractArray<E> implements UnsafeArray<E> {
      */
     protected int size;
 
-    public FastArray(@NotNull Class<E> type) {
+    public FastArray(@NotNull Class<? super E> type) {
         super(type);
     }
 
-    public FastArray(@NotNull Class<E> type, final int size) {
+    public FastArray(@NotNull Class<? super E> type, final int size) {
         super(type, size);
     }
 
@@ -259,8 +259,13 @@ public class FastArray<E> extends AbstractArray<E> implements UnsafeArray<E> {
 
     @Override
     public FastArray<E> trimToSize() {
-        if (size == array.length) return this;
+
+        if (size == array.length) {
+            return this;
+        }
+
         array = ArrayUtils.copyOfRange(array, 0, size);
+
         return this;
     }
 

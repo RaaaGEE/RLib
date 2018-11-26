@@ -22,7 +22,7 @@ public class CompilerTests {
     public void testCompileOneSource()
             throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
-        final URL javaSource = getClass().getResource("/java/source/TestCompileJavaSource.java");
+        final URL javaSource = getClass().getResource("/TestCompileJavaSource.java");
 
         final Compiler compiler = CompilerFactory.newDefaultCompiler();
         final Class<?>[] compiled = compiler.compile(javaSource.toURI());

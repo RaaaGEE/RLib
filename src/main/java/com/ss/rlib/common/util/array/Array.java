@@ -1,18 +1,19 @@
 package com.ss.rlib.common.util.array;
 
 import static com.ss.rlib.common.util.ClassUtils.unsafeCast;
+import static com.ss.rlib.common.util.ClassUtils.unsafeNNCast;
+
 import com.ss.rlib.common.function.*;
 import com.ss.rlib.common.util.ArrayUtils;
+import com.ss.rlib.common.util.ClassUtils;
 import com.ss.rlib.common.util.pools.Reusable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.RandomAccess;
+import java.util.*;
 import java.util.function.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -32,6 +33,17 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      */
     static <T> @NotNull ReadOnlyArray<T> empty() {
         return unsafeCast(ArrayFactory.EMPTY_ARRAY);
+    }
+
+    /**
+     * Create a new array for the element's type.
+     *
+     * @param type the element's type.
+     * @param <T>  the element's type.
+     * @return the new array.
+     */
+    static <T> @NotNull Array<T> ofType(@NotNull Class<? super T> type) {
+        return ArrayFactory.newArray(type);
     }
 
     /**
@@ -69,6 +81,30 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
         return ArrayFactory.newReadOnlyArray(newArray);
     }
 
+    @SafeVarargs
+    static <T> @NotNull ReadOnlyArray<T> optionals(@NotNull Class<? super T> type, @NotNull Optional<T>... elements) {
+        return ArrayFactory.newReadOnlyArray(Arrays.stream(elements)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toArray(value -> ArrayUtils.create(type, value)));
+    }
+
+    static <T, A extends Array<T>> @NotNull A append(@NotNull A first, @NotNull A second) {
+        first.addAll(second);
+        return first;
+    }
+
+    static <T> @NotNull ReadOnlyArray<T> combine(@NotNull Array<T> first, @NotNull Array<T> second) {
+
+        var componentType = ClassUtils.<Class<T>>unsafeNNCast(first.array()
+                .getClass()
+                .getComponentType());
+
+        var newArray = ArrayUtils.combine(first.toArray(componentType), second.toArray(componentType));
+
+        return ArrayFactory.newReadOnlyArray(newArray);
+    }
+
     /**
      * Create a supplier which creates new arrays.
      *
@@ -76,7 +112,7 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      * @param <T>  the element's type.
      * @return the supplier.
      */
-    static <T> @NotNull Supplier<Array<T>> supplier(@NotNull Class<?> type) {
+    static <T> @NotNull Supplier<Array<T>> supplier(@NotNull Class<? super T> type) {
         return () -> ArrayFactory.newConcurrentStampedLockArray(type);
     }
 
@@ -87,7 +123,7 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      * @param <T>  the element's type.
      * @return the supplier.
      */
-    static <T> @NotNull Function<Class<?>, Array<T>> function(@NotNull Class<?> type) {
+    static <T> @NotNull Function<Class<? super T>, Array<T>> function(@NotNull Class<? super T> type) {
         return ArrayFactory::newConcurrentStampedLockArray;
     }
 
@@ -343,6 +379,50 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
     }
 
     /**
+     * Apply the function to each element.
+     *
+     * @param argument the argument.
+     * @param function the function.
+     * @param <T>      the argument's type.
+     */
+    default <T> void forEachR(@NotNull T argument, @NotNull BiConsumer<@NotNull T, @NotNull E> function) {
+
+        for (E element : array()) {
+
+            if (element == null) {
+                break;
+            }
+
+            function.accept(argument, element);
+        }
+    }
+
+    /**
+     * Apply the function to each converted element.
+     *
+     * @param <T>       the argument's type.
+     * @param <C>       the converted type.
+     * @param argument  the argument.
+     * @param converter the converter from T to C.
+     * @param function  the function.
+     */
+    default <T, C> void forEach(
+            @Nullable T argument,
+            @NotNull Function<E, C> converter,
+            @NotNull BiConsumer<C, T> function
+    ) {
+
+        for (E element : array()) {
+
+            if (element == null) {
+                break;
+            }
+
+            function.accept(converter.apply(element), argument);
+        }
+    }
+
+    /**
      * Apply the function to each filtered element.
      *
      * @param <T>       the type of an argument.
@@ -371,11 +451,11 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
     /**
      * Apply the function to each element.
      *
-     * @param <F>      the type parameter
-     * @param <S>      the type parameter
      * @param first    the first argument.
      * @param second   the second argument.
      * @param function the function.
+     * @param <F>      the firs argument's type.
+     * @param <S>      the second argument's type.
      */
     default <F, S> void forEach(@Nullable F first, @Nullable S second, @NotNull TripleConsumer<E, F, S> function) {
 
@@ -386,6 +466,31 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
             }
 
             function.accept(element, first, second);
+        }
+    }
+
+    /**
+     * Apply the function to each element.
+     *
+     * @param first    the first argument.
+     * @param second   the second argument.
+     * @param function the function.
+     * @param <F>      the firs argument's type.
+     * @param <S>      the second argument's type.
+     */
+    default <F, S> void forEachRm(
+            @NotNull F first,
+            @NotNull S second,
+            @NotNull TripleConsumer<@NotNull F, @NotNull E, @NotNull S> function
+    ) {
+
+        for (E element : array()) {
+
+            if (element == null) {
+                break;
+            }
+
+            function.accept(first, element, second);
         }
     }
 
@@ -642,12 +747,12 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
     }
 
     /**
-     * Search an element using the condition.
+     * Find an element using the condition.
      *
      * @param predicate the condition.
      * @return the found element or null.
      */
-    default @Nullable E search(@NotNull Predicate<E> predicate) {
+    default @Nullable E findAny(@NotNull Predicate<E> predicate) {
 
         if (isEmpty()) {
             return null;
@@ -672,7 +777,7 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      * @param predicate the condition.
      * @return the found element or null.
      */
-    default <T> @Nullable E search(@Nullable T argument, @NotNull BiPredicate<E, T> predicate) {
+    default <T> @Nullable E findAny(@Nullable T argument, @NotNull BiPredicate<? super E, T> predicate) {
 
         if (isEmpty()) {
             return null;
@@ -690,6 +795,55 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
     }
 
     /**
+     * Return true if there is at least an element for the condition.
+     *
+     * @param <T>       the argument's type.
+     * @param argument  the argument.
+     * @param predicate the condition.
+     * @return true if there is at least an element for the condition.
+     */
+    default <T> boolean anyMatch(@Nullable T argument, @NotNull BiPredicate<? super E, T> predicate) {
+        return findAny(argument, predicate) != null;
+    }
+
+    /**
+     * Find an element for the condition.
+     *
+     * @param <T>       the argument's type.
+     * @param argument  the argument.
+     * @param condition the condition.
+     * @return the found element or null.
+     */
+    default <T> @Nullable E findAnyR(@Nullable T argument, @NotNull BiPredicate<T, ? super E> condition) {
+
+        if (isEmpty()) {
+            return null;
+        }
+
+        for (E element : array()) {
+            if (element == null) {
+                break;
+            } else if (condition.test(argument, element)) {
+                return element;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Return true if there is at least an element for the condition.
+     *
+     * @param <T>       the argument's type.
+     * @param argument  the argument.
+     * @param condition the condition.
+     * @return true if there is at least an element for the condition.
+     */
+    default <T> boolean anyMatchR(@Nullable T argument, @NotNull BiPredicate<T, ? super E> condition) {
+        return findAnyR(argument, condition) != null;
+    }
+
+    /**
      * Search an element using the condition.
      *
      * @param <F>       the first argument's type.
@@ -699,7 +853,7 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      * @param predicate the condition.
      * @return the found element or null.
      */
-    default <F, S> @Nullable E search(
+    default <F, S> @Nullable E findAny(
             @Nullable F first,
             @Nullable S second,
             @NotNull TriplePredicate<E, F, S> predicate
@@ -727,7 +881,7 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      * @param predicate the condition.
      * @return the found element or null.
      */
-    default @Nullable E search(int argument, @NotNull ObjectIntPredicate<E> predicate) {
+    default @Nullable E findAny(int argument, @NotNull ObjectIntPredicate<E> predicate) {
 
         if (isEmpty()) {
             return null;
@@ -751,7 +905,7 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      * @param predicate the condition.
      * @return the found element or null.
      */
-    default @Nullable E searchL(long argument, @NotNull ObjectLongPredicate<E> predicate) {
+    default @Nullable E findAnyL(long argument, @NotNull ObjectLongPredicate<E> predicate) {
 
         if (isEmpty()) {
             return null;
@@ -803,7 +957,7 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
      * @param comparator the comparator.
      * @return the array
      */
-    default @NotNull Array<E> sort(@NotNull ArrayComparator<@NotNull E> comparator) {
+    default @NotNull Array<E> sort(@NotNull ArrayComparator<E> comparator) {
         ArrayUtils.sort(array(), 0, size(), comparator);
         return this;
     }
@@ -867,4 +1021,6 @@ public interface Array<E> extends Collection<E>, Serializable, Reusable, Cloneab
         E[] array = array();
         return Arrays.copyOf(array, size(), array.getClass());
     }
+
+    @NotNull String toString(@NotNull Function<E, @NotNull String> toString);
 }

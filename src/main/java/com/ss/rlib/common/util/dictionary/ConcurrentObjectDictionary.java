@@ -18,13 +18,40 @@ import java.util.function.Consumer;
 public interface ConcurrentObjectDictionary<K, V> extends ObjectDictionary<K, V>, ConcurrentDictionary<K, V> {
 
     /**
+     * Create a new concurrent object dictionary for the key's type and value's type.
+     *
+     * @param keyValueType the key's and value's type.
+     * @param <T>          the key's and value's type.
+     * @return the new concurrent object dictionary.
+     */
+    static <T> @NotNull ObjectDictionary<T, T> ofType(@NotNull Class<? super T> keyValueType) {
+        return DictionaryFactory.newConcurrentAtomicObjectDictionary();
+    }
+
+    /**
+     * Create a new concurrent object dictionary for the key's type and value's type.
+     *
+     * @param keyType   the key's type.
+     * @param valueType the value's type.
+     * @param <K>       the key's type.
+     * @param <V>       the value's type.
+     * @return the new concurrent object dictionary.
+     */
+    static <K, V> @NotNull ConcurrentObjectDictionary<K, V> ofType(
+            @NotNull Class<? super K> keyType,
+            @NotNull Class<? super V> valueType
+    ) {
+        return DictionaryFactory.newConcurrentAtomicObjectDictionary();
+    }
+
+    /**
      * Execute the function for this dictionary in the block {@link ConcurrentObjectDictionary#writeLock()}.
      *
      * @param consumer the function.
      * @return this dictionary.
      */
     default @NotNull ConcurrentObjectDictionary<K, V> runInWriteLock(
-            @NotNull Consumer<ConcurrentObjectDictionary<K, V>> consumer
+            @NotNull Consumer<@NotNull ConcurrentObjectDictionary<K, V>> consumer
     ) {
 
         long stamp = writeLock();
@@ -46,7 +73,7 @@ public interface ConcurrentObjectDictionary<K, V> extends ObjectDictionary<K, V>
      */
     default @NotNull ConcurrentObjectDictionary<K, V> runInWriteLock(
             @NotNull K key,
-            @NotNull BiConsumer<ConcurrentObjectDictionary<K, V>, K> consumer
+            @NotNull BiConsumer<@NotNull ConcurrentObjectDictionary<K, V>, @NotNull K> consumer
     ) {
 
         long stamp = writeLock();
@@ -70,8 +97,8 @@ public interface ConcurrentObjectDictionary<K, V> extends ObjectDictionary<K, V>
      */
     default <F> @NotNull ConcurrentObjectDictionary<K, V> runInWriteLock(
             @NotNull K key,
-            @Nullable F argument,
-            @NotNull TripleConsumer<ConcurrentObjectDictionary<K, V>, K, F> consumer
+            @NotNull F argument,
+            @NotNull TripleConsumer<@NotNull ConcurrentObjectDictionary<K, V>, @NotNull K, @NotNull F> consumer
     ) {
 
         long stamp = writeLock();
@@ -94,7 +121,7 @@ public interface ConcurrentObjectDictionary<K, V> extends ObjectDictionary<K, V>
      */
     default @Nullable V getInReadLock(
             @NotNull K key,
-            @NotNull BiFunction<ConcurrentObjectDictionary<K, V>, K, V> function
+            @NotNull BiFunction<ConcurrentObjectDictionary<K, V>, @NotNull K, @NotNull V> function
     ) {
         long stamp = readLock();
         try {
@@ -114,13 +141,27 @@ public interface ConcurrentObjectDictionary<K, V> extends ObjectDictionary<K, V>
      */
     default @Nullable V getInWriteLock(
             @NotNull K key,
-            @NotNull BiFunction<ConcurrentObjectDictionary<K, V>, K, V> function
+            @NotNull BiFunction<ConcurrentObjectDictionary<K, V>, @NotNull K, @NotNull V> function
     ) {
         long stamp = writeLock();
         try {
             return function.apply(this, key);
         } finally {
             writeUnlock(stamp);
+        }
+    }
+
+    /**
+     * Performs the given action for each key-value pair of this dictionary.
+     *
+     * @param consumer the consumer.
+     */
+    default void forEachInReadLock(@NotNull BiConsumer<@NotNull ? super K, @NotNull ? super V> consumer) {
+        long stamp = readLock();
+        try {
+            forEach(consumer);
+        } finally {
+            readUnlock(stamp);
         }
     }
 }

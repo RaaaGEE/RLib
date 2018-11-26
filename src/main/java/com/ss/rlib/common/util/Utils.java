@@ -27,11 +27,9 @@ import java.util.function.Consumer;
  */
 public final class Utils {
 
-    @NotNull
     private static final ThreadLocal<SimpleDateFormat> LOCAL_DATE_FORMAT = withInitial(() ->
             new SimpleDateFormat("HH:mm:ss:SSS"));
 
-    @NotNull
     private static final ThreadLocal<Date> LOCAL_DATE = withInitial(Date::new);
 
     /**
@@ -41,16 +39,16 @@ public final class Utils {
      * @param port the port.
      * @return true if the port is free.
      */
-    public static boolean checkFreePort(@NotNull final String host, final int port) {
+    public static boolean checkFreePort(@NotNull String host, int port) {
 
         try {
 
-            final ServerSocket serverSocket = host.equalsIgnoreCase("*") ?
+            ServerSocket serverSocket = host.equalsIgnoreCase("*") ?
                     new ServerSocket(port) : new ServerSocket(port, 50, InetAddress.getByName(host));
 
             serverSocket.close();
 
-        } catch (final IOException e) {
+        } catch (IOException e) {
             return false;
         }
 
@@ -99,19 +97,30 @@ public final class Utils {
     }
 
     /**
-     * Convert a string to a HEX string.
+     * Convert the string from HEX to a plain string.
      *
-     * @param string the string.
-     * @return the HEX string.
+     * @param string the HEX string.
+     * @return the plain string.
      */
-    public static @NotNull String fromHEX(@NotNull final String string) {
+    @Deprecated(forRemoval = true)
+    public static @NotNull String fromHEX(@NotNull String string) {
+        return fromHex(string);
+    }
 
-        final char[] array = string.toCharArray();
+    /**
+     * Convert the string from HEX to a plain string.
+     *
+     * @param string the HEX string.
+     * @return the plain string.
+     * @since 8.1.0
+     */
+    public static @NotNull String fromHex(@NotNull String string) {
 
-        final StringBuilder builder = new StringBuilder(string.length() * 2);
+        var array = string.toCharArray();
+        var builder = new StringBuilder(string.length() / 4);
 
         for (int i = 0, length = array.length - 3; i < length; i += 4) {
-            final String element = String.valueOf(array, i, 4);
+            var element = String.valueOf(array, i, 4);
             builder.append((char) Integer.parseInt(element, 16));
         }
 
@@ -643,16 +652,28 @@ public final class Utils {
      *
      * @param string the original string.
      * @return the hex string.
+     * @see #toHex(String)
      */
-    public static @NotNull String toHEX(@NotNull final String string) {
+    @Deprecated(forRemoval = true)
+    public static @NotNull String toHEX(@NotNull String string) {
+        return toHex(string);
+    }
 
-        final StringBuilder builder = new StringBuilder(string.length() * 2);
+    /**
+     * Convert the plain string to a HEX string.
+     *
+     * @param string the plain string.
+     * @return the hex string.
+     * @since 8.1.0
+     */
+    public static @NotNull String toHex(@NotNull String string) {
+
+        var builder = new StringBuilder(string.length() * 2);
 
         for (int i = 0, length = string.length(); i < length; i++) {
 
-            final char charAt = string.charAt(i);
-
-            String element = Integer.toHexString(charAt);
+            var charAt = string.charAt(i);
+            var element = Integer.toHexString(charAt);
 
             if (element.length() == 1) {
                 element = "000" + element;

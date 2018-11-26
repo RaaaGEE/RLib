@@ -3,46 +3,29 @@ buildscript {
         mavenCentral()
         jcenter()
     }
-    dependencies {
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-    }
 }
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'idea'
-apply plugin: 'org.junit.platform.gradle.plugin'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-group = 'com.spaceshift'
-version = '7.1.6'
+group = 'com.github.zcxv'
+version = 'develop-SNAPSHOT'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.10
+targetCompatibility = 1.10
 
 
 compileTestJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = 1.10
+    targetCompatibility = 1.10
     options.compilerArgs += '-parameters'
 }
 
-ext.junitPlatformVersion = "1.0.0"
-ext.junitJupiterVersion = "5.0.0"
+ext.junitJupiterVersion = "5.2.0"
 ext.log4jVersion = '2.6.2'
 ext.bintrayVersion = version
-
-junitPlatform {
-    filters {
-        engines {
-        }
-        tags {
-        }
-    }
-    logManager 'org.apache.logging.log4j.jul.LogManager'
-}
 
 repositories {
     mavenCentral()
@@ -54,31 +37,10 @@ publishing {
         RlibArtifact(MavenPublication) {
             from components.java
             groupId group
-            artifactId 'rlib.common'
+            artifactId 'RLib'
             version bintrayVersion
             artifact sourcesJar
             artifact javadocJar
-        }
-    }
-}
-
-bintray {
-    user = System.getProperty('bintrayUser')
-    key = System.getProperty('bintrayKey')
-    publications = ['RlibArtifact']
-    pkg {
-        repo = 'maven'
-        name = 'com.spaceshift.rlib.common'
-        licenses = ['Apache-2.0']
-        websiteUrl = 'https://github.com/JavaSaBr/Rlib'
-        vcsUrl = 'https://github.com/JavaSaBr/RLib.git'
-        issueTrackerUrl = 'https://github.com/JavaSaBr/RLib/issues'
-        githubRepo = 'JavaSaBr/RLib'
-        githubReleaseNotesFile = 'README.md'
-        version {
-            name = bintrayVersion
-            desc = bintrayVersion
-            released  = new Date()
         }
     }
 }
@@ -89,17 +51,21 @@ dependencies {
     compileOnly group: 'org.jetbrains', name: 'annotations', version: '15.0'
 
     testCompile group: 'org.jetbrains', name: 'annotations', version: '15.0'
-    testCompile "org.junit.platform:junit-platform-commons:$junitPlatformVersion"
-    testRuntime "org.junit.platform:junit-platform-engine:$junitPlatformVersion"
 
     testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+}
 
-    testRuntime "org.apache.logging.log4j:log4j-core:$log4jVersion"
-    testRuntime "org.apache.logging.log4j:log4j-jul:$log4jVersion"
+test {
+    useJUnitPlatform()
 
-    // Only needed to run tests in an (IntelliJ) IDE(A) that bundles an older version
-    testCompile "org.junit.platform:junit-platform-launcher:$junitPlatformVersion"
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+
+    reports {
+        html.enabled = true
+    }
 }
 
 javadoc {
@@ -117,5 +83,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
+    gradleVersion = '4.9'
+    distributionType = Wrapper.DistributionType.ALL
 }

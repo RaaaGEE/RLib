@@ -69,4 +69,8 @@ public interface ReadOnlyArray<E> extends Array<E> {
     @Override
     @Deprecated
     void clear();
+
+    @Override
+    @Deprecated
+    @NotNull Array<E> sort(@NotNull ArrayComparator<E> comparator);
 }
