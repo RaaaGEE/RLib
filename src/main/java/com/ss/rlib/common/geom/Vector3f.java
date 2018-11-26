@@ -402,15 +402,27 @@ public final class Vector3f {
      * @return the new normalized vector.
      */
     public @NotNull Vector3f normalize() {
+        return normalize(new Vector3f());
+    }
+    
+    /**
+     * Normalized this vector and save result to out.
+     *
+     * @param out out vector
+     * @return return out vector
+     */
+    public @NotNull Vector3f normalize(@NotNull Vector3f out) {
 
         float length = x * x + y * y + z * z;
 
         if (length != 1F && length != 0F) {
             length = 1.0F / ExtMath.sqrt(length);
-            return new Vector3f(x * length, y * length, z * length);
+            out.set(x * length, y * length, z * length);
+        } else {
+            out.set(x, y, z);
         }
 
-        return new Vector3f(x, y, z);
+        return out;
     }
 
     /**
