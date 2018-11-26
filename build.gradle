@@ -3,19 +3,15 @@ buildscript {
         mavenCentral()
         jcenter()
     }
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
-    }
 }
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'idea'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-group = 'com.spaceshift'
-version = '8.1.0'
+group = 'com.github.zcxv'
+version = 'develop-SNAPSHOT'
 
 sourceCompatibility = 1.10
 targetCompatibility = 1.10
@@ -41,31 +37,10 @@ publishing {
         RlibArtifact(MavenPublication) {
             from components.java
             groupId group
-            artifactId 'rlib.common'
+            artifactId 'RLib'
             version bintrayVersion
             artifact sourcesJar
             artifact javadocJar
-        }
-    }
-}
-
-bintray {
-    user = System.getProperty('bintrayUser')
-    key = System.getProperty('bintrayKey')
-    publications = ['RlibArtifact']
-    pkg {
-        repo = 'maven'
-        name = 'com.spaceshift.rlib.common'
-        licenses = ['Apache-2.0']
-        websiteUrl = 'https://github.com/JavaSaBr/Rlib'
-        vcsUrl = 'https://github.com/JavaSaBr/RLib.git'
-        issueTrackerUrl = 'https://github.com/JavaSaBr/RLib/issues'
-        githubRepo = 'JavaSaBr/RLib'
-        githubReleaseNotesFile = 'README.md'
-        version {
-            name = bintrayVersion
-            desc = bintrayVersion
-            released  = new Date()
         }
     }
 }
