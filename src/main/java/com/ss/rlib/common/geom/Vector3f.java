@@ -108,31 +108,6 @@ public final class Vector3f implements Cloneable {
     }
 
     /**
-     * Add the values to this vector.
-     *
-     * @param addX x axis value.
-     * @param addY y axis value.
-     * @param addZ z axis value.
-     * @return this vector.
-     */
-    public @NotNull Vector3f addLocal(float addX, float addY, float addZ) {
-        x += addX;
-        y += addY;
-        z += addZ;
-        return this;
-    }
-
-    /**
-     * Add the vector to this vector.
-     *
-     * @param vector the vector.
-     * @return this vector.
-     */
-    public @NotNull Vector3f addLocal(@NotNull Vector3f vector) {
-        return addLocal(vector.x, vector.y, vector.z);
-    }
-
-    /**
      * Calculate a cross vector between this vector and the coordinates.
      *
      * @param otherX the other x
@@ -399,15 +374,7 @@ public final class Vector3f implements Cloneable {
      * @return the new normalized vector.
      */
     public @NotNull Vector3f normalize() {
-
-        var length = x * x + y * y + z * z;
-
-        if (length != 1F && length != 0F) {
-            length = 1.0F / ExtMath.sqrt(length);
-            return new Vector3f(x * length, y * length, z * length);
-        }
-
-        return new Vector3f(x, y, z);
+        return normalize(new Vector3f());
     }
 
     /**
@@ -416,7 +383,7 @@ public final class Vector3f implements Cloneable {
      * @return this vector.
      */
     public @NotNull Vector3f normalizeLocal() {
-        return normalize(new Vector3f());
+        return normalize(this);
     }
     
     /**
@@ -463,6 +430,20 @@ public final class Vector3f implements Cloneable {
         this.z = z;
         return this;
     }
+    
+    /**
+     * Adds the vector from this vector and store the result to the result vector.
+     *
+     * @param vector the vector.
+     * @param result the result.
+     * @return the result vector.
+     */
+    public @NotNull Vector3f add(@NotNull Vector3f vector, @NotNull Vector3f result) {
+        result.x = x + vector.x;
+        result.y = y + vector.y;
+        result.z = z + vector.z;
+        return result;
+    }
 
     /**
      * Subtract the vector from this vector and store the result to the result vector.
@@ -476,6 +457,21 @@ public final class Vector3f implements Cloneable {
         result.y = y - vector.y;
         result.z = z - vector.z;
         return result;
+    }
+    
+    /**
+     * Add the values to this vector.
+     *
+     * @param addX x axis value.
+     * @param addY y axis value.
+     * @param addZ z axis value.
+     * @return this vector.
+     */
+    public @NotNull Vector3f addLocal(float addX, float addY, float addZ) {
+        x += addX;
+        y += addY;
+        z += addZ;
+        return this;
     }
 
     /**
@@ -491,6 +487,16 @@ public final class Vector3f implements Cloneable {
         y -= subY;
         z -= subZ;
         return this;
+    }
+    
+    /**
+     * Add the vector to this vector.
+     *
+     * @param vector the vector.
+     * @return this vector.
+     */
+    public @NotNull Vector3f addLocal(@NotNull Vector3f vector) {
+        return addLocal(vector.x, vector.y, vector.z);
     }
 
     /**
